@@ -1,0 +1,167 @@
+// Import Bootstrap SCSS
+@import "bootstrap/scss/bootstrap";
+
+// Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+// Variables
+:root {
+  --primary-color: #6c5ce7;
+  --primary-light: #f8f5ff;
+  --success-color: #00c853;
+  --danger-color: #ff3d00;
+  --text-color: #323232;
+  --text-light: #636e72;
+  --background-color: #FDFDF8;
+  --navbar-background-color: #E1F5FE;
+  --navbar-text-color: #5B3A1B;
+  --white: #F2F0EA;
+  --header-height: 60px;
+  --sidebar-width: 250px;
+  --border-radius: 1rem;
+}
+
+// Reset
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+// Base styles
+body {
+  font-family: 'Prompt', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  overflow-x: hidden;
+}
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Card Styles
+.card {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+}
+
+// Button Styles
+.btn {
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &-primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    
+    &:hover {
+      background: darken(#6c5ce7, 10%);
+      border-color: darken(#6c5ce7, 10%);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Form Controls
+.form-control {
+  border-radius: 0.75rem;
+  border: 1.5px solid #dee2e6;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.15);
+  }
+}
+
+// Table Styles
+.table {
+  margin-bottom: 0;
+  
+  th {
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 2px solid #eee;
+    padding: 1rem;
+  }
+  
+  td {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+}
+
+// Responsive Container Padding
+.container-fluid {
+  @media (max-width: $breakpoint-sm) {
+    padding: 1rem;
+  }
+  
+  @media (min-width: $breakpoint-sm) {
+    padding: 1.5rem;
+  }
+  
+  @media (min-width: $breakpoint-lg) {
+    padding: 2rem;
+  }
+}
+
+// Grid Gaps
+.row {
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 1.5rem;
+  
+  @media (max-width: $breakpoint-sm) {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+  }
+}
+
+// Mobile Optimizations
+@media (max-width: $breakpoint-md) {
+  .card {
+    border-radius: 0.75rem;
+  }
+  
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .table-responsive {
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+}
+
+// Helper Classes
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.text-danger {
+  color: var(--danger-color) !important;
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+.rounded-xl {
+  border-radius: var(--border-radius) !important;
+}

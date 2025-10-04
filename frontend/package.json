@@ -1,0 +1,46 @@
+{
+  "name": "accounting-app",
+  "version": "1.0.0",
+  "description": "A simple accounting application for managing income and expenses.",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "vercel-build": "npm run build",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.6",
+    "@vitejs/plugin-vue": "^2.3.4",
+    "@vue/compiler-sfc": "^3.x.x",
+    "axios": "^1.10.0",
+    "base64-font-loader": "^0.0.4",
+    "bcryptjs": "^3.0.2",
+    "bootstrap": "^5.3.6",
+    "chart.js": "^4.4.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "mongodb": "^4.17.1",
+    "mongoose": "^6.12.0",
+    "sweetalert2": "^11.21.2",
+    "vue": "^3.x.x",
+    "vue-router": "^4.1.6",
+    "vuex": "^4.1.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.31.0",
+    "eslint-plugin-vue": "^9.8.0",
+    "sass": "^1.32.13",
+    "sass-loader": "^10.4.1",
+    "vite": "^2.9.15"
+  },
+  "author": "",
+  "license": "MIT"
+}
