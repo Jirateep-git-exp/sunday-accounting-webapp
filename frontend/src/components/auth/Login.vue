@@ -29,6 +29,12 @@
           </button>
         </div>
 
+        <div class="d-grid mb-3">
+          <button type="button" @click="loginWithLine" class="btn btn-success">
+            เข้าสู่ระบบด้วย LINE
+          </button>
+        </div>
+
         <p class="text-center">
           ยังไม่มีบัญชี? 
           <router-link to="/register">สมัครสมาชิก</router-link>
@@ -73,6 +79,14 @@ export default {
       }
     }
 
+    const loginWithLine = () => {
+      const clientId = import.meta.env.VITE_LINE_CHANNEL_ID
+      const redirectUri = encodeURIComponent(import.meta.env.VITE_LINE_REDIRECT_URI)
+      const state = Math.random().toString(36).substring(2) // สร้าง state แบบสุ่ม
+      const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid%20email`
+      window.location.href = lineLoginUrl
+    }
+
     onMounted(async () => {
       // First notification for category reminder
       await Swal.fire({
@@ -94,7 +108,8 @@ export default {
       email,
       password,
       isLoading,
-      handleSubmit
+      handleSubmit,
+      loginWithLine
     }
   }
 }

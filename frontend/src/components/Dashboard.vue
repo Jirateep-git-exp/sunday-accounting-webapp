@@ -1,9 +1,14 @@
 <template>
   <div class="dashboard container-fluid">
+    <div class="mb-4 justify-content-end d-flex">
+      <ConnectLine />
+    </div>
+    
     <!-- Greeting Section -->
     <div class="greeting-section mb-4">
       <h2>{{ greeting }}, {{ currentDay }}!</h2>
     </div>
+
 
     <!-- Overview Cards -->
     <div class="row g-4">
@@ -53,27 +58,22 @@
     <!-- Main Content Grid -->
     <div class="row g-4 mt-4">
       <!-- Calendar Column -->
-        <div class="col-12 col-lg-4 order-2 order-lg-1">
-          <div class="card-body calendar-wrapper">
-            <Calendar v-model:selectedDate="selectedDate" />
-          </div>
+      <div class="col-12 col-lg-4 order-2 order-lg-1">
+        <div class="card-body calendar-wrapper">
+          <Calendar v-model:selectedDate="selectedDate" />
+        </div>
       </div>
 
       <!-- Transaction Form Column -->
       <div class="col-12 col-md-6 col-lg-4 order-1 order-md-2">
         <div class="h-100">
           <div class="mt-3 px-3 pb-3">
-              <button class="btn button-outline w-100" @click="showMultipleModal = true">
+            <router-link to="/transaction">
+              <button class="btn button-outline w-100">
                 <i class="fa-solid fa-layer-group me-2"></i>
                 เพิ่มหลายรายการ
               </button>
-          </div>
-
-          <div class="">
-            <transaction-form 
-              :selected-date="selectedDate"
-              @transaction-added="handleTransaction" 
-            />
+            </router-link>
           </div>
         </div>
       </div>
@@ -85,21 +85,15 @@
             <div class="transactions-header">
               <h3>รายการล่าสุด</h3>
               <div class="tabs">
-                <button 
-                  :class="['tab-btn', { active: activeTab === 'income' }]"
-                  @click="activeTab = 'income'"
-                >
+                <button :class="['tab-btn', { active: activeTab === 'income' }]" @click="activeTab = 'income'">
                   รายรับ
                 </button>
-                <button 
-                  :class="['tab-btn', { active: activeTab === 'expenses' }]"
-                  @click="activeTab = 'expenses'"
-                >
+                <button :class="['tab-btn', { active: activeTab === 'expenses' }]" @click="activeTab = 'expenses'">
                   รายจ่าย
                 </button>
               </div>
             </div>
-            
+
             <div class="transactions-list" v-if="activeTab === 'income'">
               <template v-for="(entry, idx) in recentIncome" :key="entry.id">
                 <div class="transaction-item">
@@ -131,7 +125,7 @@
     </div>
 
     <!-- Multiple Transactions Modal -->
-    <div v-if="showMultipleModal" class="sa-modal-overlay" @click.self="showMultipleModal = false">
+    <!-- <div v-if="showMultipleModal" class="sa-modal-overlay" @click.self="showMultipleModal = false">
       <div class="sa-modal-container">
         <div class="sa-modal-header">
           <h3>เพิ่มรายการหลายรายการ</h3>
@@ -145,7 +139,7 @@
           />
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -153,24 +147,24 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
-import TransactionForm from './shared/TransactionForm.vue'
 import MultipleTransactionForm from './shared/MultipleTransactionForm.vue'
+import ConnectLine from './shared/ConnectLine.vue'
 import Swal from 'sweetalert2'
 
 export default {
   name: 'Dashboard',
   components: {
     Calendar,
-    TransactionForm,
-    MultipleTransactionForm
+    MultipleTransactionForm,
+    ConnectLine
   },
   setup() {
     const store = useStore()
     const selectedDate = ref(new Date())
     const activeTab = ref('income')
     const selectedPocket = ref(null)
-    const showMultipleModal = ref(false)
-    
+    // const showMultipleModal = ref(false)
+
     const isInSelectedMonth = (date) => {
       const transactionDate = new Date(date)
       return (
@@ -178,24 +172,24 @@ export default {
         transactionDate.getFullYear() === selectedDate.value.getFullYear()
       )
     }
-    
+
     const filteredIncome = computed(() => {
       return store.state.income.filter(income => isInSelectedMonth(income.date))
     })
-    
+
     const filteredExpenses = computed(() => {
       return store.state.expenses.filter(expense => isInSelectedMonth(expense.date))
     })
-    
+
     // แก้ไขการคำนวณยอดรวมให้ใช้ข้อมูลที่กรองตามเดือน
     const filteredTotalIncome = computed(() => {
       return filteredIncome.value.reduce((total, entry) => total + Number(entry.amount), 0)
     })
-    
+
     const filteredTotalExpenses = computed(() => {
       return filteredExpenses.value.reduce((total, entry) => total + Number(entry.amount), 0)
     })
-    
+
     const filteredBalance = computed(() => {
       return filteredTotalIncome.value - filteredTotalExpenses.value
     })
@@ -264,16 +258,16 @@ export default {
     // Current Day
     const currentDay = computed(() => {
       const days = [
-        'Sunday', 'Monday', 'Tuesday', 'Wednesday', 
+        'Sunday', 'Monday', 'Tuesday', 'Wednesday',
         'Thursday', 'Friday', 'Saturday'
       ]
       const today = new Date()
       return days[today.getDay()]
     })
 
-    const onMultipleTransactionsAdded = () => {
-      showMultipleModal.value = false
-    }
+    // const onMultipleTransactionsAdded = () => {
+    //   showMultipleModal.value = false
+    // }
 
     onMounted(async () => {
       // First notification for category reminder
@@ -305,14 +299,13 @@ export default {
       balance: computed(() => store.getters.balance),
       recentIncome,
       recentExpenses,
-      handleTransaction,
       activeTab,
       formatDate,
       greeting,
       currentDay,
       selectedPocket,
-      showMultipleModal,
-      onMultipleTransactionsAdded
+      // showMultipleModal,
+      // onMultipleTransactionsAdded
     }
   }
 }

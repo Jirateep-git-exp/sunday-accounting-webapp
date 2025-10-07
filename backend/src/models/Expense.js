@@ -22,6 +22,11 @@ const expenseSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  lineUserId: {
+    type: String, 
+    required: false, 
+    unique: true
+  },
     createdByEmail: {
     type: String,
     required: true

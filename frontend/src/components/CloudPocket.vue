@@ -298,12 +298,11 @@ import { ref, computed, nextTick, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
-import TransactionForm from './shared/TransactionForm.vue'
 
 export default {
   name: 'CloudPocket',
   components: {
-    TransactionForm
+    
   },
   setup() {
     const store = useStore()

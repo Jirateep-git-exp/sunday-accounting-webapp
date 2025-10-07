@@ -20,7 +20,7 @@ exports.createExpense = async (req, res) => {
       date,
       pocketId,
       userId: req.user._id,
-      createdByEmail: req.user.email
+      createdByEmail: req.user.email || `lineuser-${req.user._id}`
     });
     const savedExpense = await newExpense.save();
     res.status(201).json(savedExpense);
@@ -105,7 +105,7 @@ exports.createMultipleExpenses = async (req, res) => {
       date: new Date(expense.date),
       pocketId: expense.pocketId,
       userId: req.user._id,
-      createdByEmail: req.user.email
+      createdByEmail: req.user.email || `lineuser-${req.user._id}`
     }));
 
     // Insert all expenses

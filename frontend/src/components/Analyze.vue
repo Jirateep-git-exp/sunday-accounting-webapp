@@ -323,9 +323,6 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import Chart from 'chart.js/auto'
-import { jsPDF } from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import addThaiFonts from '../utils/fonts'
 import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
 
@@ -609,11 +606,6 @@ export default {
 
     onMounted(() => {
       updateCharts()
-    })
-
-    onMounted(() => {
-      // โหลดฟอนต์ไทย
-      addThaiFonts()
     })
 
     const formatDate = (date) => {

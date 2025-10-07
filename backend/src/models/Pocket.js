@@ -14,6 +14,11 @@ const pocketSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  lineUserId: {
+    type: String, 
+    required: false, 
+    unique: true
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

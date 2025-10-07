@@ -13,9 +13,6 @@ exports.getAllIncome = async (req, res) => {
 // Create new income entry
 exports.createIncome = async (req, res) => {
     try {
-        console.log('Received income data:', req.body); // Log received data
-        console.log('User data:', req.user); // Log user data
-
         const { amount, description, date, pocketId } = req.body;
         
         // Validate required fields
@@ -32,13 +29,10 @@ exports.createIncome = async (req, res) => {
             date: new Date(date),
             pocketId,
             userId: req.user._id,
-            createdByEmail: req.user.email
+            createdByEmail: req.user.email || `lineuser-${req.user._id}`
         });
 
-        console.log('New income object:', newIncome); // Log new income object
-
         const savedIncome = await newIncome.save();
-        console.log('Saved income:', savedIncome); // Log saved income
 
         res.status(201).json(savedIncome);
     } catch (error) {
@@ -127,7 +121,7 @@ exports.createMultipleIncome = async (req, res) => {
             date: new Date(income.date),
             pocketId: income.pocketId,
             userId: req.user._id,
-            createdByEmail: req.user.email
+            createdByEmail: req.user.email || `lineuser-${req.user._id}`
         }));
 
         // Insert all income entries

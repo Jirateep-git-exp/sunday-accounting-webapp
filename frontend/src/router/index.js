@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '../../../frontend/src/store'
 import Dashboard from '../components/Dashboard.vue'
+import Transaction from '../components/shared/MultipleTransactionForm.vue'
 import Income from '../components/Income.vue'
 import Expenses from '../components/Expenses.vue'
 import Analyze from '../components/Analyze.vue'
 import CloudPocket from '../components/CloudPocket.vue'
 import Login from '../components/auth/Login.vue'
 import Register from '../components/auth/Register.vue'
+import LoginSuccess from '../components/shared/LoginSuccess.vue'
 
 const routes = [
   {
@@ -20,6 +22,12 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
+    path: '/login-success',
+    name: 'LoginSuccess',
+    component: LoginSuccess,
+    // meta: { requiresGuest: true }
+  },
+  {
     path: '/register',
     name: 'Register',
     component: Register,
@@ -29,6 +37,12 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/transaction',
+    name: 'Transaction',
+    component: Transaction,
     meta: { requiresAuth: true }
   },
   {

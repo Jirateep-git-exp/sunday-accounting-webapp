@@ -433,10 +433,6 @@
         <i class="fa-solid fa-save me-2"></i>
         บันทึกทั้งหมด ({{ validTransactions.length }} รายการ)
       </button>
-      <button type="button" class="btn btn-outline-secondary" @click="$emit('cancel')">
-        <i class="fa-solid fa-times me-2"></i>
-        ยกเลิก
-      </button>
     </div>
   </div>
 </template>
@@ -453,7 +449,7 @@ export default {
       required: true
     }
   },
-  emits: ['transactions-added', 'cancel'],
+  emits: ['transactions-added'],
   setup(props, { emit }) {
     const store = useStore()
     
@@ -945,6 +941,7 @@ export default {
 </script>
 
 <style scoped>
+/*
 .multiple-transaction-form {
   width: 100%;
   background: white;
@@ -955,6 +952,7 @@ export default {
   max-height: 80vh;
   overflow-y: auto;
 }
+  */
 
 .form-header {
   margin-bottom: 2rem;

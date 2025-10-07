@@ -30,5 +30,17 @@ app.use('/api/pockets', pocketRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/expenses', expenseRoutes);
 
+// Line Webhook Route
+const lineWebhook = require('./src/utils/lineWebhook')
+app.use('/line-webhook', lineWebhook)
+
+// Line User Routes
+const lineUserRoutes = require('./src/routes/lineUser')
+app.use('/api/lineuser', lineUserRoutes)
+
+// Line Auth Routes
+const lineAuthRoutes = require('./src/routes/lineauth')
+app.use('/api/auth', lineAuthRoutes)
+
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server is running on port ${port}`));

@@ -23,6 +23,11 @@
           <i class="nav-icon fas fa-home"></i>
           <span class="nav-label">หน้าหลัก</span>
         </router-link>
+
+        <router-link to="/transaction" class="nav-item" active-class="active" @click="isMenuOpen = false">
+          <i class="nav-icon fas fa-circle"></i>
+          <span class="nav-label">เพิ่มรายการ</span>
+        </router-link>
         
         <router-link to="/income" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-plus-circle"></i>

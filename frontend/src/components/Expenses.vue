@@ -187,13 +187,11 @@
 import { ref, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
-import TransactionForm from './shared/TransactionForm.vue'
 import Swal from 'sweetalert2'
 
 export default {
   components: {
     Calendar,
-    TransactionForm
   },
   setup() {
     const store = useStore()

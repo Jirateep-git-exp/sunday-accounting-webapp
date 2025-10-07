@@ -21,7 +21,7 @@ exports.createPocket = async (req, res) => {
       type,
       icon,
       userId: req.user._id,
-      createdByEmail: user.email
+      createdByEmail: user.email || `lineuser-${user._id}`
     });
     await pocket.save();
     res.status(201).json(pocket);
@@ -48,7 +48,7 @@ exports.getPockets = async (req, res) => {
       const defaultPocketsWithUser = defaultPockets.map(pocket => ({
         ...pocket,
         userId: req.user._id,
-        createdByEmail: user.email
+        createdByEmail: user.email || `lineuser-${user._id}`
       }));
       
       pockets = await Pocket.insertMany(defaultPocketsWithUser);
@@ -56,6 +56,7 @@ exports.getPockets = async (req, res) => {
 
     res.json(pockets);
   } catch (error) {
+    console.error('GET POCKETS ERROR:', error);
     res.status(500).json({ error: error.message });
   }
 };
