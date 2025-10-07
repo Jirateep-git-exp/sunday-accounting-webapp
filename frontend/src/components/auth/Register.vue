@@ -49,6 +49,12 @@
           </button>
         </div>
 
+        <div class="d-grid mb-3">
+          <button type="button" @click="loginWithLine" class="btn btn-success">
+            สมัครสมาชิกด้วย LINE
+          </button>
+        </div>
+
         <p class="text-center">
           มีบัญชีอยู่แล้ว? 
           <router-link to="/login">เข้าสู่ระบบ</router-link>
@@ -79,6 +85,14 @@ export default {
     const isPasswordMatch = computed(() => {
       return password.value === confirmPassword.value
     })
+
+    const loginWithLine = () => {
+      const clientId = import.meta.env.VITE_LINE_CHANNEL_ID
+      const redirectUri = encodeURIComponent(import.meta.env.VITE_LINE_REDIRECT_URI)
+      const state = Math.random().toString(36).substring(2) // สร้าง state แบบสุ่ม
+      const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid%20email`
+      window.location.href = lineLoginUrl
+    }
 
     const handleSubmit = async () => {
       if (!isPasswordMatch.value) {
@@ -133,7 +147,8 @@ export default {
       confirmPassword,
       isLoading,
       isPasswordMatch,
-      handleSubmit
+      handleSubmit,
+      loginWithLine
     }
   }
 }

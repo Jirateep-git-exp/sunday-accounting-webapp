@@ -49,6 +49,11 @@
           <span class="nav-label">Cloud Pocket</span>
         </router-link>
 
+        <router-link to="/settings" class="nav-item" active-class="active" @click="isMenuOpen = false">
+          <i class="nav-icon fas fa-cog"></i>
+          <span class="nav-label">ตั้งค่า</span>
+        </router-link>
+
         <div class="nav-item" @click="handleLogout">
           <i class="nav-icon fas fa-sign-out-alt"></i>
           <span class="nav-label">ออกจากระบบ</span>

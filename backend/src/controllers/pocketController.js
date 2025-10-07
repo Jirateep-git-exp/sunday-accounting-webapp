@@ -1,19 +1,18 @@
 const Pocket = require('../models/Pocket');
 const User = require('../models/User');
 
-const defaultPockets = [
-  { name: 'เงินเดือน', type: 'income', icon: 'fa-solid fa-sack-dollar' },
-  { name: 'โบนัส', type: 'income', icon: 'fa-solid fa-hand-holding-dollar' },
-  { name: 'รายได้พิเศษ', type: 'income', icon: 'fa-solid fa-piggy-bank' },
-  { name: 'อาหาร', type: 'expense', icon: 'fa-solid fa-burger' },
-  { name: 'การเดินทาง', type: 'expense', icon: 'fa-solid fa-car' },
-  { name: 'ที่พัก', type: 'expense', icon: 'fa-solid fa-house' },
-  { name: 'ของใช้', type: 'expense', icon: 'fa-solid fa-cart-shopping' }
-];
+const catalog = require('../utils/pocketCatalog');
+// pick a subset of essentials for first-time users
+const defaultPockets = catalog.filter(c => [
+  // income essentials
+  'salary','bonus','side-income',
+  // expense essentials
+  'food','groceries','transport','housing','phone-internet','utilities','others'
+].includes(c.id)).map(c => ({ name: c.nameTh, type: c.type, icon: c.icon }));
 
 exports.createPocket = async (req, res) => {
   try {
-    const { name, type, icon } = req.body;
+  const { name, type, icon } = req.body;
     const user = await User.findById(req.user._id);
     
     const pocket = new Pocket({

@@ -8,14 +8,21 @@ const API_URL =
 
 export default createStore({
   state() {
-    const token = localStorage.getItem('token')
+    // Read token safely: treat 'null'/'undefined'/'' as no token
+    const rawToken = localStorage.getItem('token')
+    const token = rawToken && rawToken !== 'null' && rawToken !== 'undefined' && rawToken.trim() !== '' ? rawToken : null
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    } else {
+      delete axios.defaults.headers.common['Authorization']
     }
-    
+
+    const rawUser = localStorage.getItem('user')
+    const user = rawUser && rawUser !== 'null' && rawUser !== 'undefined' ? JSON.parse(rawUser) : null
+
     return {
-      user: JSON.parse(localStorage.getItem('user')) || null,
-      token: token || null,
+      user,
+      token,
       income: [],
       expenses: [],
       incomePockets: [],
@@ -26,14 +33,19 @@ export default createStore({
   mutations: {
     setUser(state, user) {
       state.user = user
-      localStorage.setItem('user', JSON.stringify(user))
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user))
+      } else {
+        localStorage.removeItem('user')
+      }
     },
     setToken(state, token) {
       state.token = token
-      localStorage.setItem('token', token)
       if (token) {
+        localStorage.setItem('token', token)
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       } else {
+        localStorage.removeItem('token')
         delete axios.defaults.headers.common['Authorization']
       }
     },

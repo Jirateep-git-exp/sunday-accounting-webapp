@@ -29,13 +29,15 @@ const expenseRoutes = require('./src/routes/expenses');
 app.use('/api/pockets', pocketRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/expenses', expenseRoutes);
+const profileRoutes = require('./src/routes/profile');
+app.use('/api/profile', profileRoutes);
 
 // Line Webhook Route
 const lineWebhook = require('./src/utils/lineWebhook')
 app.use('/line-webhook', lineWebhook)
 
 // Line User Routes
-const lineUserRoutes = require('./src/routes/lineUser')
+const lineUserRoutes = require('./src/routes/lineuser')
 app.use('/api/lineuser', lineUserRoutes)
 
 // Line Auth Routes

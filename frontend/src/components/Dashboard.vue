@@ -1,9 +1,5 @@
 <template>
   <div class="dashboard container-fluid">
-    <div class="mb-4 justify-content-end d-flex">
-      <ConnectLine />
-    </div>
-    
     <!-- Greeting Section -->
     <div class="greeting-section mb-4">
       <h2>{{ greeting }}, {{ currentDay }}!</h2>
@@ -150,6 +146,7 @@ import Calendar from './shared/Calendar.vue'
 import MultipleTransactionForm from './shared/MultipleTransactionForm.vue'
 import ConnectLine from './shared/ConnectLine.vue'
 import Swal from 'sweetalert2'
+import Settings from './Settings.vue'
 
 export default {
   name: 'Dashboard',

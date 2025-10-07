@@ -36,6 +36,10 @@
               + เพิ่มหมวดหมู่
             </button>
           </div>
+          <div v-if="nonStandardPockets.length" class="alert alert-warning py-2 px-3 mb-3">
+            พบหมวดหมู่กำหนดเอง {{ nonStandardPockets.length }} รายการ
+            <button class="btn btn-sm btn-outline-dark ms-2" @click="openFirstNonStandard('income')">ปรับให้เป็นมาตรฐาน</button>
+          </div>
           <div v-if="isLoading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">Loading...</span>
@@ -81,6 +85,10 @@
               + เพิ่มหมวดหมู่
             </button>
           </div>
+          <div v-if="nonStandardPockets.length" class="alert alert-warning py-2 px-3 mb-3">
+            พบหมวดหมู่กำหนดเอง {{ nonStandardPockets.length }} รายการ
+            <button class="btn btn-sm btn-outline-dark ms-2" @click="openFirstNonStandard('expense')">ปรับให้เป็นมาตรฐาน</button>
+          </div>
           <div v-if="isLoading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">Loading...</span>
@@ -122,29 +130,8 @@
     <div ref="transactionsSection" class="row mt-4" v-if="selectedPocket">
       <div class="col-12">
         <div class="transaction-section">
-          <div class="section-header mb-4">
-            <div class="d-flex align-items-center gap-2">
-              <div class="selected-pocket-icon">
-                <i :class="selectedPocket.icon"></i>
-              </div>
-              <h3 class="mb-0">{{ selectedPocket.name }}</h3>
-            </div>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <button class="btn btn-primary btn-sm" @click="showAddForm = !showAddForm">
-                <i :class="showAddForm ? 'bi bi-x-lg' : 'bi bi-plus-lg'"></i>
-                {{ showAddForm ? 'ปิดฟอร์ม' : 'เพิ่มรายการ' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Add Transaction Form -->
-          <div v-if="showAddForm" class="add-form-section my-4">
-            <transaction-form :selected-date="selectedDate" :selected-pocket="selectedPocket"
-              @transaction-added="handleTransaction" />
-          </div>
-
           <!-- Transactions List -->
-          <div v-else class="table-responsive">
+          <div class="table-responsive">
             <table class="table table-hover">
               <thead>
                 <tr>
@@ -212,6 +199,7 @@
                 </ul>
               </nav>
             </div>
+            
           </div>
         </div>
       </div>
@@ -229,17 +217,22 @@
         <form @submit.prevent="addNewPocket">
           <div class="modal-body">
             <div class="form-group mb-3">
-              <label class="form-label">ชื่อหมวดหมู่</label>
-              <input v-model="newPocket.name" type="text" class="form-control" required placeholder="ระบุชื่อหมวดหมู่">
+              <label class="form-label">เลือกหมวดหมู่ (จากรายการมาตรฐาน)</label>
+              <select v-model="newPocket.catalogId" class="form-select" required>
+                <option disabled value="">-- เลือกหมวดหมู่ --</option>
+                <option v-for="item in addOptions" :key="item.id" :value="item.id">
+                  {{ item.nameTh }} ({{ item.nameEn }})
+                </option>
+              </select>
+              <small v-if="addOptions.length === 0" class="text-muted">
+                ไม่มีหมวดหมู่ให้เลือก โปรดรีเฟรชหน้า หากยังไม่แสดงระบบจะใช้รายการมาตรฐานในตัวคอมโพเนนต์
+              </small>
             </div>
             <div class="form-group">
-              <label class="form-label">เลือกไอคอน</label>
-              <div class="icon-grid">
-                <div v-for="icon in availableIcons" :key="icon.value"
-                  :class="['icon-option', { selected: newPocket.icon === icon.value }]"
-                  @click="newPocket.icon = icon.value">
-                  <i :class="icon.value"></i>
-                </div>
+              <label class="form-label">ไอคอน</label>
+              <div class="d-flex align-items-center gap-2">
+                <div class="icon-preview"><i :class="selectedCatalogIcon"></i></div>
+                <small class="text-muted">ระบบจะเลือกไอคอนตามหมวดหมู่มาตรฐานอัตโนมัติ</small>
               </div>
             </div>
           </div>
@@ -265,17 +258,20 @@
         <form @submit.prevent="updatePocket">
           <div class="modal-body">
             <div class="form-group mb-3">
-              <label class="form-label">ชื่อหมวดหมู่</label>
-              <input v-model="editingPocket.name" type="text" class="form-control" required>
+              <label class="form-label">เลือกหมวดหมู่มาตรฐาน</label>
+              <select v-model="editingCatalogId" class="form-select" required>
+                <option disabled value="">-- เลือกหมวดหมู่ --</option>
+                <option v-for="item in pocketCatalogByType(editingPocket?.type || 'expense')" :key="item.id" :value="item.id">
+                  {{ item.nameTh }} ({{ item.nameEn }})
+                </option>
+              </select>
+              <small class="text-muted">จะเปลี่ยนชื่อและไอคอนให้ตรงกับมาตรฐาน</small>
             </div>
             <div class="form-group">
-              <label class="form-label">เลือกไอคอน</label>
-              <div class="icon-grid">
-                <div v-for="icon in availableIcons" :key="icon.value"
-                  :class="['icon-option', { selected: editingPocket.icon === icon.value }]"
-                  @click="editingPocket.icon = icon.value">
-                  <i :class="icon.value"></i>
-                </div>
+              <label class="form-label">ไอคอน</label>
+              <div class="d-flex align-items-center gap-2">
+                <div class="icon-preview"><i :class="editingSelectedIcon"></i></div>
+                <small class="text-muted">เลือกตามหมวดหมู่มาตรฐาน</small>
               </div>
             </div>
           </div>
@@ -311,16 +307,45 @@ export default {
     const showModal = ref(false)
     const newPocketType = ref('income')
     const newPocket = ref({
-      name: '',
-      icon: 'bi bi-wallet'
+      catalogId: '',
+      icon: ''
     })
-    const showAddForm = ref(false)
     const showEditModal = ref(false)
     const editingPocket = ref(null)
+  const editingCatalogId = ref('')
     const isSelectMode = ref(false)
     const selectedPockets = ref([])
     const selectedDate = ref(new Date())
     const isLoading = ref(false)
+
+    // Local fallback catalog in case the store doesn't provide one
+    const defaultCatalog = ref([
+      // Income
+      { id: 'salary', type: 'income', nameTh: 'เงินเดือน', nameEn: 'Salary', icon: 'fa-solid fa-sack-dollar' },
+      { id: 'bonus', type: 'income', nameTh: 'โบนัส', nameEn: 'Bonus', icon: 'fa-solid fa-hand-holding-dollar' },
+      { id: 'side-income', type: 'income', nameTh: 'รายได้พิเศษ', nameEn: 'Side income', icon: 'fa-solid fa-piggy-bank' },
+      { id: 'interest', type: 'income', nameTh: 'ดอกเบี้ย', nameEn: 'Interest', icon: 'fa-solid fa-building-columns' },
+      { id: 'investment', type: 'income', nameTh: 'การลงทุน', nameEn: 'Investment', icon: 'fa-solid fa-chart-line' },
+      { id: 'gift-income', type: 'income', nameTh: 'ของขวัญ/ให้มา', nameEn: 'Gift', icon: 'fa-solid fa-gift' },
+      // Expense
+      { id: 'food', type: 'expense', nameTh: 'อาหาร/เครื่องดื่ม', nameEn: 'Food & Drinks', icon: 'fa-solid fa-utensils' },
+      { id: 'groceries', type: 'expense', nameTh: 'ของใช้เข้าบ้าน', nameEn: 'Groceries', icon: 'fa-solid fa-cart-shopping' },
+      { id: 'transport', type: 'expense', nameTh: 'เดินทาง', nameEn: 'Transport', icon: 'fa-solid fa-car' },
+      { id: 'housing', type: 'expense', nameTh: 'บ้าน/เช่า', nameEn: 'Housing/Rent', icon: 'fa-solid fa-house' },
+      { id: 'utilities', type: 'expense', nameTh: 'ค่าน้ำ/ค่าไฟ', nameEn: 'Utilities', icon: 'fa-solid fa-plug' },
+      { id: 'phone-internet', type: 'expense', nameTh: 'มือถือ/อินเทอร์เน็ต', nameEn: 'Phone/Internet', icon: 'fa-solid fa-wifi' },
+      { id: 'health', type: 'expense', nameTh: 'สุขภาพ', nameEn: 'Health', icon: 'fa-solid fa-heart-pulse' },
+      { id: 'entertainment', type: 'expense', nameTh: 'บันเทิง', nameEn: 'Entertainment', icon: 'fa-solid fa-film' },
+      { id: 'shopping', type: 'expense', nameTh: 'ช้อปปิ้ง', nameEn: 'Shopping', icon: 'fa-solid fa-bag-shopping' },
+      { id: 'education', type: 'expense', nameTh: 'การศึกษา', nameEn: 'Education', icon: 'fa-solid fa-graduation-cap' },
+      { id: 'travel', type: 'expense', nameTh: 'ท่องเที่ยว', nameEn: 'Travel', icon: 'fa-solid fa-plane' },
+      { id: 'pets', type: 'expense', nameTh: 'สัตว์เลี้ยง', nameEn: 'Pets', icon: 'fa-solid fa-paw' },
+      { id: 'fees', type: 'expense', nameTh: 'ค่าธรรมเนียม/ภาษี', nameEn: 'Fees/Tax', icon: 'fa-solid fa-receipt' },
+      { id: 'charity', type: 'expense', nameTh: 'ทำบุญ/บริจาค', nameEn: 'Charity', icon: 'fa-solid fa-hand-holding-heart' },
+      { id: 'debt', type: 'expense', nameTh: 'หนี้สิน/ผ่อน', nameEn: 'Debt/Installment', icon: 'fa-solid fa-money-check-dollar' },
+      { id: 'savings', type: 'expense', nameTh: 'ออมเงิน', nameEn: 'Savings', icon: 'fa-solid fa-piggy-bank' },
+      { id: 'others', type: 'expense', nameTh: 'อื่นๆ', nameEn: 'Others', icon: 'fa-solid fa-ellipsis' }
+    ])
 
     const incomePockets = computed(() => store.getters.incomePockets)
     const expensePockets = computed(() => store.getters.expensePockets)
@@ -391,37 +416,10 @@ export default {
 
     const closeModal = () => {
       showModal.value = false
-      newPocket.value = {
-        name: '',
-        icon: 'bi bi-wallet'
-      }
+      newPocket.value = { catalogId: '', icon: '' }
     }
 
-    const addNewPocket = async () => {
-      try {
-        const pocket = {
-          name: newPocket.value.name,
-          icon: newPocket.value.icon,
-          type: newPocketType.value
-        }
-
-        await store.dispatch('createPocket', pocket)
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: 'Pocket created successfully!'
-        })
-
-        closeModal()
-      } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.message || 'Failed to create pocket'
-        })
-      }
-    }
+    
 
     // Computed properties สำหรับจำนวนรายการของแต่ละ pocket
     const getIncomeCount = (pocketId) => {
@@ -481,49 +479,6 @@ export default {
       }).format(amount);
     }
 
-    const handleTransaction = async (transaction) => {
-      if (!selectedPocket.value) return
-
-      try {
-        const newTransaction = {
-          ...transaction,
-          pocketId: selectedPocket.value._id
-        }
-
-        if (transaction.type === 'income') {
-          await store.dispatch('addIncome', newTransaction)
-        } else {
-          await store.dispatch('addExpense', newTransaction)
-        }
-
-        // รีเฟรชข้อมูลทันทีหลังจากเพิ่มรายการ
-        await Promise.all([
-          store.dispatch('fetchIncome'),
-          store.dispatch('fetchExpenses')
-        ])
-
-        // แสดงข้อความสำเร็จ
-        Swal.fire({
-          icon: 'success',
-          title: 'สำเร็จ!',
-          text: 'เพิ่มรายการเรียบร้อยแล้ว',
-          showConfirmButton: false,
-          timer: 1500
-        })
-
-        // ปิดฟอร์มหลังจากเพิ่มสำเร็จ
-        showAddForm.value = false
-
-      } catch (error) {
-        console.error('Error adding transaction:', error)
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถเพิ่มรายการได้'
-        })
-      }
-    }
-
     // กรอง pocketTransactions ตามเดือน/ปีที่เลือก
     const pocketTransactions = computed(() => {
       if (!selectedPocket.value) return []
@@ -559,7 +514,7 @@ export default {
     }
 
     // เพิ่มรายการไอคอนที่มีให้เลือก
-    const availableIcons = [
+  const availableIcons = [
       // Income related icons
       { value: 'fa-solid fa-sack-dollar' }, // ถุงเงิน
       { value: 'fa-solid fa-money-bill-trend-up' }, // แนวโน้มเงินขึ้น
@@ -609,7 +564,7 @@ export default {
       return selectedPockets.value.some(p => p.id === pocketId)
     }
 
-    const deleteSelectedPockets = async () => {
+  const deleteSelectedPockets = async () => {
       const result = await Swal.fire({
         title: 'ยืนยันการลบ',
         text: `ต้องการลบหมวดหมู่ที่เลือกทั้งหมด ${selectedPockets.value.length} รายการหรือไม่?`,
@@ -623,7 +578,7 @@ export default {
       if (result.isConfirmed) {
         try {
           for (const pocket of selectedPockets.value) {
-            await store.dispatch('deletePocket', pocket._id)
+            await store.dispatch('deletePocket', pocket.id)
           }
           selectedPockets.value = []
           isSelectMode.value = false
@@ -675,6 +630,9 @@ export default {
     // แก้ไขฟังก์ชัน editPocket
     const editPocket = (pocket) => {
       editingPocket.value = { ...pocket }
+      // Preselect catalog by matching current pocket name
+      const match = pocketCatalog.value.find(c => c.type === pocket.type && c.nameTh === pocket.name)
+      editingCatalogId.value = match?.id || ''
       showEditModal.value = true
     }
 
@@ -686,28 +644,24 @@ export default {
 
     // แก้ไขฟังก์ชัน updatePocket
     const updatePocket = async () => {
-      if (editingPocket.value) {
-        try {
-          await store.dispatch('updatePocket', {
-            id: editingPocket.value._id,
-            data: {
-              name: editingPocket.value.name,
-              icon: editingPocket.value.icon
-            }
-          })
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Pocket updated successfully!'
-          })
-          closeEditModal()
-        } catch (error) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.message || 'Failed to update pocket'
-          })
+      if (!editingPocket.value) return
+      try {
+        const item = pocketCatalog.value.find(c => c.id === editingCatalogId.value && c.type === editingPocket.value.type)
+        if (!item) throw new Error('กรุณาเลือกหมวดหมู่มาตรฐาน')
+        // Prevent duplicate (same type & name) except itself
+        const exists = store.state.pockets.some(p => p._id !== editingPocket.value._id && p.type === editingPocket.value.type && p.name === item.nameTh)
+        if (exists) {
+          await Swal.fire({ icon: 'warning', title: 'มีหมวดหมู่นี้อยู่แล้ว', text: 'ไม่สามารถเปลี่ยนซ้ำซ้อนในประเภทเดียวกันได้' })
+          return
         }
+        await store.dispatch('updatePocket', {
+          id: editingPocket.value._id,
+          data: { name: item.nameTh, icon: item.icon }
+        })
+        Swal.fire({ icon: 'success', title: 'Success', text: 'Pocket updated successfully!' })
+        closeEditModal()
+      } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to update pocket' })
       }
     }
 
@@ -723,10 +677,7 @@ export default {
     const showAddPocketModal = (type) => {
       newPocketType.value = type
       showModal.value = true
-      newPocket.value = {
-        name: '',
-        icon: 'fa-solid fa-wallet' // เปลี่ยนเป็น Font Awesome icon
-      }
+      newPocket.value = { catalogId: '', icon: '' }
     }
 
     // Add sort functionality
@@ -825,13 +776,24 @@ export default {
       }
     }
 
+    const loadCatalog = async () => {
+      try {
+        await store.dispatch('fetchPocketCatalog')
+      } catch (error) {
+        console.error('Error loading pocket catalog:', error)
+      }
+    }
+
     // เรียกใช้ loadPockets และ loadTransactions เมื่อ component ถูกสร้าง
     onMounted(async () => {
       try {
-        await loadPockets();
-        await loadTransactions();
+        await Promise.all([
+          loadCatalog(),
+          loadPockets(),
+          loadTransactions()
+        ])
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Error loading data:', error)
       }
     })
 
@@ -858,22 +820,89 @@ export default {
       return transactions.reduce((total, t) => total + Number(t.amount), 0)
     }
 
+  const pocketCatalog = computed(() => {
+      const fromStore = store.getters && store.getters.pocketCatalog
+      return Array.isArray(fromStore) && fromStore.length ? fromStore : defaultCatalog.value
+    })
+    const incomeCatalog = computed(() => pocketCatalog.value.filter(c => c.type === 'income'))
+    const expenseCatalog = computed(() => pocketCatalog.value.filter(c => c.type === 'expense'))
+  const addOptions = computed(() => newPocketType.value === 'income' ? incomeCatalog.value : expenseCatalog.value)
+    const pocketCatalogByType = (type) => pocketCatalog.value.filter(c => c.type === type)
+
+    const selectedCatalogItem = computed(() => {
+      return pocketCatalog.value.find(c => c.id === newPocket.value.catalogId)
+    })
+
+    const selectedCatalogIcon = computed(() => selectedCatalogItem.value?.icon || 'fa-solid fa-wallet')
+    const editingSelectedItem = computed(() => pocketCatalog.value.find(c => c.id === editingCatalogId.value))
+    const editingSelectedIcon = computed(() => editingSelectedItem.value?.icon || editingPocket.value?.icon || 'fa-solid fa-wallet')
+
+    // Non-standard pockets detection (name not in catalog for the type)
+    const nonStandardPockets = computed(() => {
+      const set = new Set(pocketCatalog.value.filter(c => c.type === 'income').map(c => `income:${c.nameTh}`))
+      pocketCatalog.value.filter(c => c.type === 'expense').forEach(c => set.add(`expense:${c.nameTh}`))
+      return store.state.pockets.filter(p => !set.has(`${p.type}:${p.name}`))
+    })
+
+    const openFirstNonStandard = (type) => {
+      const target = nonStandardPockets.value.find(p => p.type === type) || nonStandardPockets.value[0]
+      if (target) editPocket(target)
+    }
+
+    const addNewPocket = async () => {
+      try {
+        const item = selectedCatalogItem.value
+        if (!item) throw new Error('กรุณาเลือกหมวดหมู่')
+        // Prevent duplicate creation for the same type and catalog name
+        const exists = store.state.pockets.some(p => p.type === newPocketType.value && p.name === item.nameTh)
+        if (exists) {
+          await Swal.fire({
+            icon: 'warning',
+            title: 'มีหมวดหมู่นี้อยู่แล้ว',
+            text: 'คุณได้สร้างหมวดหมู่นี้ไว้แล้วสำหรับประเภทนี้'
+          })
+          return
+        }
+        const pocket = {
+          name: item.nameTh,
+          icon: item.icon,
+          type: newPocketType.value
+        }
+
+        await store.dispatch('createPocket', pocket)
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Pocket created successfully!'
+        })
+
+        closeModal()
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Failed to create pocket'
+        })
+      }
+    }
+
     return {
       incomePockets,
       expensePockets,
       selectedPocket,
       showModal,
+  newPocketType,
       newPocket,
       selectPocket,
       showAddPocketModal,
       closeModal,
       addNewPocket,
+  addOptions,
       calculatePocketTotal,
       incomePocketsWithTotals,
       expensePocketsWithTotals,
       formatAmount,
-      handleTransaction,
-      showAddForm,
       pocketTransactions,
       pocketTotal,
       formatDate,
@@ -915,7 +944,17 @@ export default {
       selectedYear,
       months,
       yearRange,
-      monthlyPocketTotal
+      monthlyPocketTotal,
+      pocketCatalogByType,
+      selectedCatalogIcon,
+  incomeCatalog,
+  expenseCatalog,
+      // edit modal catalog binding
+      editingCatalogId,
+      editingSelectedIcon,
+      // migration helper
+      nonStandardPockets,
+      openFirstNonStandard
     }
   }
 }
@@ -1249,6 +1288,18 @@ export default {
   border: none;
   border-top-left-radius: 0.375rem;
   border-bottom-left-radius: 0.375rem;
+}
+
+.icon-preview {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 1.2rem;
 }
 
 /* .form-select {

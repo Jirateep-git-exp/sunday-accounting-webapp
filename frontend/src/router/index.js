@@ -6,6 +6,7 @@ import Income from '../components/Income.vue'
 import Expenses from '../components/Expenses.vue'
 import Analyze from '../components/Analyze.vue'
 import CloudPocket from '../components/CloudPocket.vue'
+import Settings from '../components/Settings.vue'
 import Login from '../components/auth/Login.vue'
 import Register from '../components/auth/Register.vue'
 import LoginSuccess from '../components/shared/LoginSuccess.vue'
@@ -67,6 +68,12 @@ const routes = [
     path: '/cloudpocket',
     name: 'CloudPocket',
     component: CloudPocket,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
     meta: { requiresAuth: true }
   }
 ]

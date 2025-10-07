@@ -31,24 +31,6 @@
       </div>
     </div>
 
-    <!-- Add Transaction Modal -->
-    <div v-if="showAddForm" class="modal-overlay" @click.self="closeForm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="mb-0">{{ editingTransaction ? 'แก้ไขรายการ' : 'เพิ่มรายการ' }}</h3>
-          <button type="button" class="btn-close" @click="closeForm"></button>
-        </div>
-        <div class="modal-body">
-          <transaction-form 
-            :selected-date="selectedDate"
-            :editing-transaction="editingTransaction"
-            @transaction-added="handleTransactionAdded"
-            @cancel="closeForm"
-          />
-        </div>
-      </div>
-    </div>
-
     <!-- Main Content -->
     <div class="row g-4 mt-2">
       <!-- Calendar Column -->
@@ -626,13 +608,6 @@ export default {
 
 .modal-body {
   padding: 1rem;
-}
-
-/* ปรับแต่ง TransactionForm ภายใน Modal */
-:deep(.transaction-form) {
-  max-width: 100%;
-  padding: 0;
-  background: transparent;
 }
 
 .transaction-row {

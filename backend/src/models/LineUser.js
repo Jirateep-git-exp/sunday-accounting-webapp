@@ -2,8 +2,7 @@ const mongoose = require('mongoose')
 const lineUserSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
-    unique: false
+    required: true
   },
   lineUserId: {
     type: String, 
@@ -12,13 +11,11 @@ const lineUserSchema = new mongoose.Schema({
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true
+    ref: 'User'
   },
-  email: {
-    type: String, 
-    required: false,
-    unique: true
+  avatar: {
+    type: String,
+    required: false
   },
   createdAt: {
     type: Date,

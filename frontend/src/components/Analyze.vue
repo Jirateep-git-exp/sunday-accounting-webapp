@@ -320,7 +320,7 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
@@ -507,12 +507,22 @@ export default {
 
     const updateCharts = () => {
       // อัพเดทกราฟรายรับ
-      if (incomeChart.value && incomeChartData.value.labels.length > 0) {
-        createChart(incomeChart.value, incomeChartData.value, 'income')
+      if (incomeChart.value) {
+        if (incomeChartData.value.labels.length > 0) {
+          createChart(incomeChart.value, incomeChartData.value, 'income')
+        } else if (incomeChart.value._chart) {
+          incomeChart.value._chart.destroy()
+          incomeChart.value._chart = null
+        }
       }
       // อัพเดทกราฟรายจ่าย
-      if (expenseChart.value && expenseChartData.value.labels.length > 0) {
-        createChart(expenseChart.value, expenseChartData.value, 'expense')
+      if (expenseChart.value) {
+        if (expenseChartData.value.labels.length > 0) {
+          createChart(expenseChart.value, expenseChartData.value, 'expense')
+        } else if (expenseChart.value._chart) {
+          expenseChart.value._chart.destroy()
+          expenseChart.value._chart = null
+        }
       }
     }
 
@@ -606,6 +616,29 @@ export default {
 
     onMounted(() => {
       updateCharts()
+    })
+
+    // เมื่อเดือน/ปี หรือข้อมูลเปลี่ยน ให้เรนเดอร์กราฟใหม่ (หลัง DOM อัปเดตแล้ว)
+    watch([
+      selectedMonth,
+      selectedYear,
+      () => store.state.income,
+      () => store.state.expenses,
+      () => store.state.pockets
+    ], async () => {
+      await nextTick()
+      updateCharts()
+    }, { deep: true })
+
+    // เฝ้าสังเกตข้อมูลชุดที่ใช้บนกราฟโดยตรง (กันเคสอัปเดตเฉพาะค่าในอาร์เรย์)
+    watch([incomeChartData, expenseChartData], async () => {
+      await nextTick()
+      updateCharts()
+    })
+
+    onUnmounted(() => {
+      if (incomeChart.value?._chart) incomeChart.value._chart.destroy()
+      if (expenseChart.value?._chart) expenseChart.value._chart.destroy()
     })
 
     const formatDate = (date) => {

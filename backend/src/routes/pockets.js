@@ -2,9 +2,15 @@ const express = require('express');
 const router = express.Router();
 const pocketController = require('../controllers/pocketController');
 const auth = require('../middleware/auth');
+const catalog = require('../utils/pocketCatalog');
 
 // Protect all routes
 router.use(auth);
+
+// Fixed catalog for dropdowns / migration helpers (place before other routes)
+router.get('/catalog/all', (req, res) => {
+	res.json(catalog);
+});
 
 // CRUD routes
 router.post('/', pocketController.createPocket);
