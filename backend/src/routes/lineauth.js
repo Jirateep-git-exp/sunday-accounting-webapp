@@ -13,6 +13,13 @@ const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:300
 const LINE_OA_ADD_FRIEND_URL = process.env.LINE_OA_ADD_FRIEND_URL || ''
 const go = (res, path) => res.redirect(`${FRONTEND_BASE_URL}${path}`)
 
+// Env mapping for LINE Login (separate from Messaging API/OA)
+// New names preferred: LINE_LOGIN_CHANNEL_ID / LINE_LOGIN_CHANNEL_SECRET
+// Fallback to old names if not set to avoid breaking existing envs.
+const LINE_LOGIN_CHANNEL_ID = process.env.LINE_LOGIN_CHANNEL_ID || process.env.LINE_CHANNEL_ID
+const LINE_LOGIN_CHANNEL_SECRET = process.env.LINE_LOGIN_CHANNEL_SECRET || process.env.LINE_CHANNEL_SECRET
+const LINE_REDIRECT_URI = process.env.LINE_REDIRECT_URI
+
 // Create a short-lived state token to link a LINE account to the current user
 router.post('/line/link-state', auth, async (req, res) => {
   try {
@@ -38,18 +45,18 @@ router.get('/line/callback', async (req, res) => {
 
   try {
     const tokenRes = await axios.post(
-  'https://api.line.me/oauth2/v2.1/token',
-  qs.stringify({
-    grant_type: 'authorization_code',
-    code,
-    redirect_uri: process.env.LINE_REDIRECT_URI,
-    client_id: process.env.LINE_CHANNEL_ID,
-    client_secret: process.env.LINE_CHANNEL_SECRET
-  }),
-  {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-  }
-);
+      'https://api.line.me/oauth2/v2.1/token',
+      qs.stringify({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: LINE_REDIRECT_URI,
+        client_id: LINE_LOGIN_CHANNEL_ID,
+        client_secret: LINE_LOGIN_CHANNEL_SECRET
+      }),
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }
+    );
 
   const accessToken = tokenRes.data.access_token
 
