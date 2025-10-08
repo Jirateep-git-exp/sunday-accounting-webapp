@@ -103,8 +103,9 @@ async function processEvent(event) {
     return
   }
 
-  // transaction pattern: description + space + number (at end)
-  const match = text.match(/^(.+?)\s(-?\d+)(?:\s*บาท)?$/i)
+  // transaction pattern: description + number (space optional) at end, optional 'บาท'
+  // supports: "ข้าวมันไก่ 55", "มาม่า100", "กาแฟ-45", "โบนัส+1000"
+  const match = text.match(/^(.+?)(?:\s*|\s*[-+]?)(-?\d+)(?:\s*บาท)?$/i)
   if (match) {
     const description = match[1]
     const amount = Number(match[2])
