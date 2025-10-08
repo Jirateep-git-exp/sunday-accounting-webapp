@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/line-webhook.js": { "runtime": "nodejs18.x" }
-  },
+  "builds": [
+    { "src": "api/line-webhook.js", "use": "@vercel/node" }
+  ],
   "routes": [
-    { "src": "/line-webhook", "dest": "/api/line-webhook.js" }
+    { "src": "^/line-webhook$", "dest": "api/line-webhook.js" }
   ]
 }
