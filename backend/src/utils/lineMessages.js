@@ -1,20 +1,22 @@
 // Helper builders for LINE Messaging API payloads (styled for an accounting UX)
 
 const THEME = {
-  darkBg: '#0B1220',
-  cardBg: '#0E141B',
-  text: '#E5E7EB',
-  subtext: '#9CA3AF',
-  border: '#1F2937',
+  // Softer light theme for better readability
+  lightBg: '#FFFFFF',
+  cardBg: '#FFFFFF',
+  softBg: '#F6F8FC',
+  text: '#0F172A', // slate-900
+  subtext: '#64748B', // slate-500
+  border: '#E2E8F0', // slate-200
   income: {
-    accent: '#22C55E', // emerald-500
-    accentSoft: '#0B2D1A',
+    accent: '#16A34A', // green-600
+    accentSoft: '#E7F6EC',
   },
   expense: {
-    accent: '#F43F5E', // rose-500
-    accentSoft: '#30151B',
+    accent: '#E11D48', // rose-600
+    accentSoft: '#FDE7ED',
   },
-  brand: '#4F46E5',
+  brand: '#6C63FF',
 }
 
 function formatCurrency(amount) {
@@ -32,7 +34,13 @@ function buildHelpMessage() {
   }
 }
 
-function buildConfirmFlex({ description, amount, pocketName, type }) {
+function buildConfirmFlex({ description, amount, pocketName, type, transactionId }, opts = {}) {
+  const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
+  // Deep link directly to the edit page for this transaction
+  const editPath = transactionId && type ? `/tx/${encodeURIComponent(type)}/${encodeURIComponent(String(transactionId))}/edit` : '/dashboard'
+  const openUri = opts.token
+    ? `${appBase}/login-success?token=${encodeURIComponent(opts.token)}&redirect=${encodeURIComponent(editPath)}`
+    : `${appBase}${editPath}`
   const sign = type === 'income' ? '+' : '-'
   const palette = type === 'income' ? THEME.income : THEME.expense
   const title = type === 'income' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย'
@@ -94,7 +102,7 @@ function buildConfirmFlex({ description, amount, pocketName, type }) {
           {
             type: 'box',
             layout: 'vertical',
-            backgroundColor: THEME.darkBg,
+            backgroundColor: THEME.softBg,
             cornerRadius: '10px',
             paddingAll: '12px',
             contents: [
@@ -105,32 +113,19 @@ function buildConfirmFlex({ description, amount, pocketName, type }) {
         ],
       },
       footer: {
-        type: 'box',
-        layout: 'horizontal',
-        spacing: 'md',
-        paddingAll: '16px',
-        contents: [
-          {
-            type: 'button',
-            style: 'primary',
-            color: palette.accent,
-            height: 'sm',
-            action: { type: 'message', label: 'เพิ่มอีก', text: 'เพิ่มอีก' },
-          },
-          {
-            type: 'button',
-            style: 'secondary',
-            height: 'sm',
-            color: THEME.brand,
-            action: { type: 'message', label: 'สรุปวันนี้', text: 'สรุปวันนี้' },
-          },
-        ],
-      },
+        type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '12px', contents: [
+          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'postback', label: 'ยกเลิกรายการ', data: `action=cancel_tx&type=${encodeURIComponent(type)}&tid=${encodeURIComponent(String(transactionId || ''))}` } },
+          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'แก้ไขรายการนี้', uri: openUri } },
+        ]},
     },
   }
 }
 
-function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }) {
+function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts = {}) {
+  const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
+  const openUri = opts.token
+    ? `${appBase}/login-success?token=${encodeURIComponent(opts.token)}&redirect=${encodeURIComponent('/dashboard')}`
+    : `${appBase}`
   const balance = totalIncome - totalExpense
   const dateText = new Date().toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short' })
   const headerTitle = title || 'สรุปวันนี้'
@@ -141,11 +136,7 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }) {
     contents: {
       type: 'bubble',
       size: 'mega',
-      styles: {
-        header: { backgroundColor: THEME.cardBg },
-        body: { backgroundColor: THEME.cardBg },
-        footer: { backgroundColor: THEME.cardBg },
-      },
+      styles: { header: { backgroundColor: THEME.cardBg }, body: { backgroundColor: THEME.cardBg }, footer: { backgroundColor: THEME.cardBg } },
       header: {
         type: 'box', layout: 'horizontal', paddingAll: '16px', contents: [
           { type: 'text', text: headerTitle, weight: 'bold', size: 'lg', color: THEME.text },
@@ -156,13 +147,13 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }) {
           {
             type: 'box', layout: 'horizontal', spacing: 'md', contents: [
               {
-                type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.darkBg, cornerRadius: '10px', paddingAll: '12px', contents: [
+                type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.softBg, cornerRadius: '10px', paddingAll: '12px', contents: [
                   { type: 'text', text: 'รายรับ', size: 'xs', color: THEME.subtext },
                   { type: 'text', text: `+${formatCurrency(totalIncome)} บาท`, size: 'lg', weight: 'bold', color: THEME.income.accent },
                 ]
               },
               {
-                type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.darkBg, cornerRadius: '10px', paddingAll: '12px', contents: [
+                type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.softBg, cornerRadius: '10px', paddingAll: '12px', contents: [
                   { type: 'text', text: 'รายจ่าย', size: 'xs', color: THEME.subtext },
                   { type: 'text', text: `-${formatCurrency(totalExpense)} บาท`, size: 'lg', weight: 'bold', color: THEME.expense.accent },
                 ]
@@ -170,17 +161,16 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }) {
             ]
           },
           {
-            type: 'box', layout: 'vertical', backgroundColor: THEME.darkBg, cornerRadius: '12px', paddingAll: '12px', contents: [
+            type: 'box', layout: 'vertical', backgroundColor: THEME.softBg, cornerRadius: '12px', paddingAll: '12px', contents: [
               { type: 'text', text: 'คงเหลือ', size: 'xs', color: THEME.subtext },
               { type: 'text', text: `${balance >= 0 ? '+' : ''}${formatCurrency(balance)} บาท`, size: 'xl', weight: 'bold', color: balance >= 0 ? THEME.income.accent : THEME.expense.accent },
             ]
           },
         ]},
-      footer: {
-        type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการ', text: 'กาแฟ 45' } },
-          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'message', label: 'บันทึกรายรับ', text: 'เงินเดือน 1000' } },
-        ]},
+      footer: { type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
+        { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการ', text: 'กาแฟ 45' } },
+        { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'เปิดแอพ', uri: openUri } },
+      ]},
     },
   }
 }
@@ -189,6 +179,7 @@ module.exports = {
   buildHelpMessage,
   buildConfirmFlex,
   buildSummaryFlex,
+  buildOnboardingFlex,
 }
 
 // Extra: build a pockets overview Flex (grouped by income/expense)
@@ -210,7 +201,11 @@ function mapChips(pockets, softBg) {
   return rows.length ? rows : [{ type: 'text', text: '— ไม่มีหมวด —', size: 'xs', color: THEME.subtext }]
 }
 
-function buildPocketsFlex({ incomePockets = [], expensePockets = [] }) {
+function buildPocketsFlex({ incomePockets = [], expensePockets = [] }, opts = {}) {
+  const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
+  const openUri = opts.token
+    ? `${appBase}/login-success?token=${encodeURIComponent(opts.token)}&redirect=${encodeURIComponent('/cloudpocket')}`
+    : `${appBase}`
   return {
     type: 'flex',
     altText: 'หมวดหมู่ของคุณ',
@@ -230,7 +225,7 @@ function buildPocketsFlex({ incomePockets = [], expensePockets = [] }) {
       footer: {
         type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
           { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการ', text: 'กาแฟ 45' } },
-          { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'เปิดแอพ', uri: 'https://your-frontend-url/pockets' } },
+          { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'ตั้งค่า Pocket', uri: openUri } },
         ]
       }
     }
@@ -238,3 +233,30 @@ function buildPocketsFlex({ incomePockets = [], expensePockets = [] }) {
 }
 
 module.exports.buildPocketsFlex = buildPocketsFlex
+
+function buildOnboardingFlex(opts = {}) {
+  const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
+  const token = opts.token
+  const openAppUri = token ? `${appBase}/login-success?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent('/dashboard')}` : `${appBase}`
+  const onboardingUri = token ? `${appBase}/login-success?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent('/onboarding')}` : `${appBase}/onboarding`
+  return {
+    type: 'flex',
+    altText: 'เริ่มต้นใช้งาน Cloud Pocket',
+    contents: {
+      type: 'bubble', size: 'mega', styles: { body: { backgroundColor: THEME.cardBg }, footer: { backgroundColor: THEME.cardBg } },
+      body: {
+        type: 'box', layout: 'vertical', paddingAll: '16px', spacing: 'md', contents: [
+          { type: 'text', text: 'ยินดีต้อนรับ 👋', weight: 'bold', size: 'lg', color: THEME.text },
+          { type: 'text', text: 'เริ่มเชื่อมบัญชีและตั้งค่าหมวดหมู่ (Pocket) ก่อนใช้งานบันทึกรายรับรายจ่าย', size: 'sm', color: THEME.subtext, wrap: true },
+        ]
+      },
+      footer: {
+        type: 'box', layout: 'vertical', spacing: 'md', paddingAll: '16px', contents: [
+          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'เปิดแอพ', uri: openAppUri } },
+          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'uri', label: 'ตั้งค่า Pocket', uri: onboardingUri } },
+          { type: 'text', text: 'หรือพิมพ์ help เพื่อดูวิธีใช้งาน', size: 'xs', color: THEME.subtext, align: 'center' }
+        ]
+      }
+    }
+  }
+}
