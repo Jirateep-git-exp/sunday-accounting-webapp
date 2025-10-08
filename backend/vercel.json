@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "functions": {
+    "api/line-webhook.js": { "runtime": "nodejs18.x" }
+  },
+  "routes": [
+    { "src": "/line-webhook", "dest": "/api/line-webhook.js" }
+  ]
+}
