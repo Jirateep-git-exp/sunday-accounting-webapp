@@ -16,7 +16,32 @@ const lineUserRoutes = require('../src/routes/lineuser')
 const lineAuthRoutes = require('../src/routes/lineauth')
 
 const app = express()
-app.use(cors())
+const allowedOrigins = [
+  process.env.FRONTEND_BASE_URL,
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+]
+app.use(cors({
+  origin: function (origin, cb) {
+    // allow non-browser/SSR or same-origin requests
+    if (!origin) return cb(null, true)
+    const ok = allowedOrigins.filter(Boolean).some((o) => origin === o)
+    cb(ok ? null : new Error('CORS blocked'), ok)
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
+
+// Handle preflight quickly
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.setHeader('Vary', 'Origin')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.status(204).end()
+})
 app.use(express.json())
 
 // Ensure a single shared DB connection across invocations
@@ -39,17 +64,17 @@ app.use(async (req, res, next) => {
   }
 })
 
-// Public auth routes
-app.post('/api/auth/register', authController.register)
-app.post('/api/auth/login', authController.login)
+// Public auth routes (support both with and without /api prefix)
+app.post(['/api/auth/register', '/auth/register'], authController.register)
+app.post(['/api/auth/login', '/auth/login'], authController.login)
 
 // Feature routes (protected within the route modules via middleware)
-app.use('/api/pockets', pocketRoutes)
-app.use('/api/income', incomeRoutes)
-app.use('/api/expenses', expenseRoutes)
-app.use('/api/profile', profileRoutes)
-app.use('/api/lineuser', lineUserRoutes)
-app.use('/api/auth', lineAuthRoutes)
+app.use(['/api/pockets', '/pockets'], pocketRoutes)
+app.use(['/api/income', '/income'], incomeRoutes)
+app.use(['/api/expenses', '/expenses'], expenseRoutes)
+app.use(['/api/profile', '/profile'], profileRoutes)
+app.use(['/api/lineuser', '/lineuser'], lineUserRoutes)
+app.use(['/api/auth', '/auth'], lineAuthRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ ok: true }))
