@@ -163,17 +163,40 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal for Edit Transaction (Expense) -->
+  <div v-if="showAddForm" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">แก้ไขรายการรายจ่าย</h5>
+        <button type="button" class="btn-close" aria-label="Close" @click="closeForm"></button>
+      </div>
+      <div class="modal-body">
+        <EditTransaction
+          v-if="editingTransaction"
+          :modal="true"
+          type="expense"
+          :id="editingTransaction._id"
+          @saved="handleTransactionAdded"
+          @deleted="handleTransactionAdded"
+          @close="closeForm"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { ref, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
+import EditTransaction from './shared/EditTransaction.vue'
 import Swal from 'sweetalert2'
 
 export default {
   components: {
     Calendar,
+    EditTransaction,
   },
   setup() {
     const store = useStore()
@@ -499,6 +522,13 @@ export default {
 .summary-card .card-title {
   font-size: 1rem;
   margin-bottom: 1rem;
+}
+
+.card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .summary-item {
