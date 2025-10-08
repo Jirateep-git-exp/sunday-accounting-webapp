@@ -1,5 +1,7 @@
 const Pocket = require('../models/Pocket');
 const User = require('../models/User');
+const Income = require('../models/Income');
+const Expense = require('../models/Expense');
 
 const catalog = require('../utils/pocketCatalog');
 // pick a subset of essentials for first-time users
@@ -39,19 +41,7 @@ exports.getPockets = async (req, res) => {
       query.createdByEmail = email;
     }
     
-    let pockets = await Pocket.find(query);
-
-    // ถ้าไม่มี pockets ให้สร้าง default pockets
-    if (pockets.length === 0) {
-      const user = await User.findById(req.user._id);
-      const defaultPocketsWithUser = defaultPockets.map(pocket => ({
-        ...pocket,
-        userId: req.user._id,
-        createdByEmail: user.email || `lineuser-${user._id}`
-      }));
-      
-      pockets = await Pocket.insertMany(defaultPocketsWithUser);
-    }
+    const pockets = await Pocket.find(query);
 
     res.json(pockets);
   } catch (error) {
@@ -85,8 +75,42 @@ exports.deletePocket = async (req, res) => {
     if (!pocket) {
       return res.status(404).json({ error: 'Pocket not found' });
     }
-    res.json({ message: 'Pocket deleted successfully' });
+    // Cascade delete related transactions for this user and pocket
+    await Promise.all([
+      Income.deleteMany({ userId: req.user._id, pocketId: id }),
+      Expense.deleteMany({ userId: req.user._id, pocketId: id })
+    ])
+    res.json({ message: 'Pocket and related transactions deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+// New: list default pockets presets (for onboarding UI)
+exports.getDefaultPresets = async (_req, res) => {
+  res.json(defaultPockets)
+}
+
+// New: bulk create selected pockets with custom names
+// body: { pockets: [{ id?: string, type: 'income'|'expense', name: string, icon?: string }] }
+exports.bulkCreate = async (req, res) => {
+  try {
+    const payload = Array.isArray(req.body?.pockets) ? req.body.pockets : []
+    if (!payload.length) return res.status(400).json({ error: 'No pockets provided' })
+
+    const user = await User.findById(req.user._id)
+    const docs = payload.map(p => ({
+      name: p.name && String(p.name).trim() ? String(p.name).trim() : 'Unnamed',
+      type: p.type,
+      icon: p.icon || (catalog.find(c => c.id === p.id)?.icon) || 'fa-solid fa-folder',
+      userId: req.user._id,
+      createdByEmail: user.email || `lineuser-${user._id}`
+    }))
+
+    const inserted = await Pocket.insertMany(docs)
+    res.status(201).json(inserted)
+  } catch (e) {
+    console.error('bulkCreate error:', e)
+    res.status(500).json({ error: e.message })
+  }
+}

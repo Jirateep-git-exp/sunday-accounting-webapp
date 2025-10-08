@@ -18,4 +18,8 @@ router.get('/', pocketController.getPockets);
 router.put('/:id', pocketController.updatePocket);
 router.delete('/:id', pocketController.deletePocket);
 
+// Onboarding helpers
+router.get('/presets/default', pocketController.getDefaultPresets);
+router.post('/bulk', pocketController.bulkCreate);
+
 module.exports = router;

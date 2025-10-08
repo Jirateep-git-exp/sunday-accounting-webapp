@@ -36,10 +36,6 @@
               + เพิ่มหมวดหมู่
             </button>
           </div>
-          <div v-if="nonStandardPockets.length" class="alert alert-warning py-2 px-3 mb-3">
-            พบหมวดหมู่กำหนดเอง {{ nonStandardPockets.length }} รายการ
-            <button class="btn btn-sm btn-outline-dark ms-2" @click="openFirstNonStandard('income')">ปรับให้เป็นมาตรฐาน</button>
-          </div>
           <div v-if="isLoading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">Loading...</span>
@@ -71,7 +67,7 @@
             </div>
           </div>
           <div v-else class="text-center py-4">
-            <p>ไม่พบหมวดหมู่รายรับ</p>
+            <p class="mb-3">ไม่พบหมวดหมู่รายรับ</p>
           </div>
         </div>
       </div>
@@ -84,10 +80,6 @@
             <button class="btn btn-primary" @click="showAddPocketModal('expense')">
               + เพิ่มหมวดหมู่
             </button>
-          </div>
-          <div v-if="nonStandardPockets.length" class="alert alert-warning py-2 px-3 mb-3">
-            พบหมวดหมู่กำหนดเอง {{ nonStandardPockets.length }} รายการ
-            <button class="btn btn-sm btn-outline-dark ms-2" @click="openFirstNonStandard('expense')">ปรับให้เป็นมาตรฐาน</button>
           </div>
           <div v-if="isLoading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
@@ -120,7 +112,7 @@
             </div>
           </div>
           <div v-else class="text-center py-4">
-            <p>ไม่พบหมวดหมู่รายจ่าย</p>
+            <p class="mb-3">ไม่พบหมวดหมู่รายจ่าย</p>
           </div>
         </div>
       </div>
@@ -205,46 +197,44 @@
       </div>
     </div>
 
-    <!-- Add Category Modal -->
+    <!-- Add Preset Selector Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="mb-0">
-            เพิ่มหมวดหมู่{{ newPocketType === 'income' ? 'รายรับ' : 'รายจ่าย' }}
-          </h3>
-          <button type="button" class="btn-close" @click="closeModal"></button>
+          <h3 class="mb-0">เพิ่มหมวดหมู่{{ newPocketType === 'income' ? 'รายรับ' : 'รายจ่าย' }}</h3>
+          <div class="d-flex gap-2">
+            <button class="btn btn-light" @click="selectRecommended">เลือกที่แนะนำ</button>
+            <button class="btn btn-outline-secondary" @click="clearPresetSelection">ยกเลิกทั้งหมด</button>
+            <button type="button" class="btn-close" @click="closeModal"></button>
+          </div>
         </div>
-        <form @submit.prevent="addNewPocket">
-          <div class="modal-body">
-            <div class="form-group mb-3">
-              <label class="form-label">เลือกหมวดหมู่ (จากรายการมาตรฐาน)</label>
-              <select v-model="newPocket.catalogId" class="form-select" required>
-                <option disabled value="">-- เลือกหมวดหมู่ --</option>
-                <option v-for="item in addOptions" :key="item.id" :value="item.id">
-                  {{ item.nameTh }} ({{ item.nameEn }})
-                </option>
-              </select>
-              <small v-if="addOptions.length === 0" class="text-muted">
-                ไม่มีหมวดหมู่ให้เลือก โปรดรีเฟรชหน้า หากยังไม่แสดงระบบจะใช้รายการมาตรฐานในตัวคอมโพเนนต์
-              </small>
+        <div class="modal-body">
+          <div class="preset-grid">
+            <div v-for="p in presetList" :key="p.type + ':' + p.name" class="preset-card" :class="{ selected: presetSelected.has(keyOf(p)) }" @click="togglePreset(p)">
+              <div class="preset-icon" v-if="p.icon"><i :class="p.icon"></i></div>
+              <div class="preset-name">{{ p.name }}</div>
+              <button v-if="presetSelected.has(keyOf(p))" class="preset-close" @click.stop="togglePreset(p)">✕</button>
             </div>
-            <div class="form-group">
-              <label class="form-label">ไอคอน</label>
-              <div class="d-flex align-items-center gap-2">
-                <div class="icon-preview"><i :class="selectedCatalogIcon"></i></div>
-                <small class="text-muted">ระบบจะเลือกไอคอนตามหมวดหมู่มาตรฐานอัตโนมัติ</small>
-              </div>
+            <!-- Custom add card -->
+            <div class="preset-card add" @click.stop="openCustomPreset">
+              <div class="preset-icon"><i class="fa-solid fa-plus"></i></div>
+              <div class="preset-name">เพิ่มหมวดเอง</div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" @click="closeModal">
-              ยกเลิก
-            </button>
-            <button type="submit" class="btn" :class="newPocketType === 'income' ? 'btn-success' : 'btn-danger'">
-              บันทึก
-            </button>
+
+          <!-- inline custom row -->
+          <div v-if="showCustomPreset" class="custom-row mt-3 d-flex gap-2">
+            <input v-model="customPresetName" class="form-control" placeholder="เช่น อาหาร/ค่าเช่า/เงินเดือน" />
+            <button class="btn btn-primary" @click="addCustomPreset">เพิ่ม</button>
+            <button class="btn btn-outline-secondary" @click="cancelCustomPreset">ยกเลิก</button>
           </div>
-        </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" @click="closeModal">ปิด</button>
+          <button type="button" class="btn btn-primary" :disabled="presetSelected.size === 0" @click="createSelectedPresets">
+            ยืนยันการเลือก
+          </button>
+        </div>
       </div>
     </div>
 
@@ -258,20 +248,15 @@
         <form @submit.prevent="updatePocket">
           <div class="modal-body">
             <div class="form-group mb-3">
-              <label class="form-label">เลือกหมวดหมู่มาตรฐาน</label>
-              <select v-model="editingCatalogId" class="form-select" required>
-                <option disabled value="">-- เลือกหมวดหมู่ --</option>
-                <option v-for="item in pocketCatalogByType(editingPocket?.type || 'expense')" :key="item.id" :value="item.id">
-                  {{ item.nameTh }} ({{ item.nameEn }})
-                </option>
-              </select>
-              <small class="text-muted">จะเปลี่ยนชื่อและไอคอนให้ตรงกับมาตรฐาน</small>
+              <label class="form-label">ชื่อหมวดหมู่</label>
+              <input v-model="editingName" class="form-control" required />
             </div>
             <div class="form-group">
               <label class="form-label">ไอคอน</label>
-              <div class="d-flex align-items-center gap-2">
-                <div class="icon-preview"><i :class="editingSelectedIcon"></i></div>
-                <small class="text-muted">เลือกตามหมวดหมู่มาตรฐาน</small>
+              <div class="icon-grid mt-2">
+                <div v-for="icon in availableIcons" :key="icon.value" class="icon-option" :class="{ selected: editingIcon === icon.value }" @click="editingIcon = icon.value">
+                  <i :class="icon.value"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -305,14 +290,18 @@ export default {
     const router = useRouter()
     const selectedPocket = ref(null)
     const showModal = ref(false)
-    const newPocketType = ref('income')
-    const newPocket = ref({
-      catalogId: '',
-      icon: ''
-    })
+  const newPocketType = ref('income')
+  // Preset selector state
+  const presetSelected = ref(new Set())
+  const showCustomPreset = ref(false)
+  const customPresetName = ref('')
+  const customTempPresets = ref([]) // hold custom presets created in modal so they render as cards
+  // legacy free-input (kept for fallback but unused in new UI)
+  const newPocket = ref({ name: '', icon: '' })
     const showEditModal = ref(false)
     const editingPocket = ref(null)
-  const editingCatalogId = ref('')
+    const editingName = ref('')
+    const editingIcon = ref('')
     const isSelectMode = ref(false)
     const selectedPockets = ref([])
     const selectedDate = ref(new Date())
@@ -416,7 +405,10 @@ export default {
 
     const closeModal = () => {
       showModal.value = false
-      newPocket.value = { catalogId: '', icon: '' }
+      newPocket.value = { name: '', icon: '' }
+      presetSelected.value = new Set()
+      showCustomPreset.value = false
+      customPresetName.value = ''
     }
 
     
@@ -630,9 +622,8 @@ export default {
     // แก้ไขฟังก์ชัน editPocket
     const editPocket = (pocket) => {
       editingPocket.value = { ...pocket }
-      // Preselect catalog by matching current pocket name
-      const match = pocketCatalog.value.find(c => c.type === pocket.type && c.nameTh === pocket.name)
-      editingCatalogId.value = match?.id || ''
+      editingName.value = pocket.name
+      editingIcon.value = pocket.icon || (pocket.type === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping')
       showEditModal.value = true
     }
 
@@ -646,17 +637,16 @@ export default {
     const updatePocket = async () => {
       if (!editingPocket.value) return
       try {
-        const item = pocketCatalog.value.find(c => c.id === editingCatalogId.value && c.type === editingPocket.value.type)
-        if (!item) throw new Error('กรุณาเลือกหมวดหมู่มาตรฐาน')
-        // Prevent duplicate (same type & name) except itself
-        const exists = store.state.pockets.some(p => p._id !== editingPocket.value._id && p.type === editingPocket.value.type && p.name === item.nameTh)
+        const name = (editingName.value || '').trim()
+        if (!name) throw new Error('กรุณากรอกชื่อหมวดหมู่')
+        const exists = store.state.pockets.some(p => p._id !== editingPocket.value._id && p.type === editingPocket.value.type && p.name === name)
         if (exists) {
           await Swal.fire({ icon: 'warning', title: 'มีหมวดหมู่นี้อยู่แล้ว', text: 'ไม่สามารถเปลี่ยนซ้ำซ้อนในประเภทเดียวกันได้' })
           return
         }
         await store.dispatch('updatePocket', {
           id: editingPocket.value._id,
-          data: { name: item.nameTh, icon: item.icon }
+          data: { name, icon: editingIcon.value || editingPocket.value.icon }
         })
         Swal.fire({ icon: 'success', title: 'Success', text: 'Pocket updated successfully!' })
         closeEditModal()
@@ -673,11 +663,133 @@ export default {
       }
     }
 
-    // เพิ่มฟังก์ชัน showAddPocketModal
+    // Helper for preset keys
+    const keyOf = (p) => `${p.type}:${p.name}`
+
+    // Presets by type (use catalog names as default presets)
+    // Build preset grid: catalog presets + existing custom pockets (so user can deselect to remove)
+    const presetList = computed(() => {
+      const isIncome = newPocketType.value === 'income'
+      const list = isIncome ? incomeCatalog.value : expenseCatalog.value
+      const catalogPresets = list.map(c => ({ type: c.type, name: c.nameTh || c.name || c.id, icon: c.icon, source: 'catalog' }))
+      const existing = (isIncome ? incomePockets.value : expensePockets.value)
+        .map(p => ({ type: p.type, name: p.name, icon: p.icon, source: 'existing', _id: p._id }))
+      const temps = customTempPresets.value.filter(t => t.type === (isIncome ? 'income' : 'expense'))
+      // merge by name to avoid duplicates
+      const seen = new Set()
+      const merged = []
+      for (const it of [...catalogPresets, ...existing, ...temps]) {
+        const k = keyOf(it)
+        if (!seen.has(k)) { seen.add(k); merged.push(it) }
+      }
+      return merged
+    })
+
+    // Show preset modal
     const showAddPocketModal = (type) => {
       newPocketType.value = type
       showModal.value = true
-      newPocket.value = { catalogId: '', icon: '' }
+      // Preselect pockets that already exist for this type
+      const keys = new Set()
+      const existing = type === 'income' ? incomePockets.value : expensePockets.value
+      for (const p of existing) keys.add(`${type}:${p.name}`)
+      presetSelected.value = keys
+      showCustomPreset.value = false
+      customPresetName.value = ''
+      customTempPresets.value = []
+    }
+
+    const togglePreset = (p) => {
+      const k = keyOf(p)
+      if (presetSelected.value.has(k)) presetSelected.value.delete(k)
+      else presetSelected.value.add(k)
+      // force reactivity
+      presetSelected.value = new Set(presetSelected.value)
+    }
+
+    const selectRecommended = () => {
+      // Heuristic: preselect 2-3 common presets
+      const recommended = (newPocketType.value === 'income')
+        ? ['income:เงินเดือน', 'income:ธุรกิจส่วนตัว', 'income:งานพิเศษ']
+        : ['expense:อาหาร/เครื่องดื่ม', 'expense:เดินทาง', 'expense:อื่นๆ']
+      const keys = new Set(presetSelected.value)
+      for (const k of recommended) keys.add(k)
+      presetSelected.value = keys
+    }
+
+    const clearPresetSelection = () => {
+      presetSelected.value = new Set()
+    }
+
+    const openCustomPreset = () => { showCustomPreset.value = true; customPresetName.value = '' }
+    const cancelCustomPreset = () => { showCustomPreset.value = false; customPresetName.value = '' }
+    const addCustomPreset = () => {
+      const name = (customPresetName.value || '').trim()
+      if (!name) return
+      const k = `${newPocketType.value}:${name}`
+      const exists = Array.from(presetSelected.value).some(x => x === k)
+      if (!exists) {
+        presetSelected.value.add(k)
+        presetSelected.value = new Set(presetSelected.value)
+      }
+      // also push a temp preset so it renders as a card in the grid
+      const icon = newPocketType.value === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping'
+      if (!customTempPresets.value.some(t => t.type === newPocketType.value && t.name === name)) {
+        customTempPresets.value.push({ type: newPocketType.value, name, icon, source: 'custom-temp' })
+      }
+      showCustomPreset.value = false
+      customPresetName.value = ''
+    }
+
+    const createSelectedPresets = async () => {
+      try {
+        const items = Array.from(presetSelected.value)
+        if (!items.length) return
+        const type = newPocketType.value
+        // Build sets
+        const existing = (type === 'income' ? incomePockets.value : expensePockets.value).map(p => `${type}:${p.name}`)
+        const existingSet = new Set(existing)
+        const selectedSet = new Set(items)
+        // To add = selected - existing
+        const toAdd = Array.from(selectedSet).filter(k => !existingSet.has(k))
+        // To remove = existing - selected
+        const toRemove = Array.from(existingSet).filter(k => !selectedSet.has(k))
+
+        // Confirm summary with names
+        const addNames = toAdd.map(k => k.split(':').slice(1).join(':'))
+        const removeNames = toRemove.map(k => k.split(':').slice(1).join(':'))
+        const addList = addNames.length ? `<div class="text-success"><strong>เพิ่ม:</strong> ${addNames.join(', ')}</div>` : ''
+        const removeList = removeNames.length ? `<div class="text-danger"><strong>ลบ:</strong> ${removeNames.join(', ')}</div>` : ''
+        const ok = await Swal.fire({
+          icon: 'question',
+          title: 'ยืนยันการเปลี่ยนแปลง',
+          html: `${addList}${removeList}<div class="mt-2 text-danger">หมายเหตุ: การลบจะลบรายการภายในหมวดนั้นทั้งหมดด้วย</div>`,
+          showCancelButton: true,
+          confirmButtonText: 'ยืนยัน',
+          cancelButtonText: 'ยกเลิก'
+        })
+        if (!ok.isConfirmed) return
+
+        // Apply removals first (cascade occurs in backend)
+        for (const k of toRemove) {
+          const [, name] = k.split(':')
+          const pocket = (type === 'income' ? incomePockets.value : expensePockets.value).find(p => p.name === name)
+          if (pocket) await store.dispatch('deletePocket', pocket._id)
+        }
+
+        // Apply additions
+        for (const k of toAdd) {
+          const [t, ...rest] = k.split(':')
+          const name = rest.join(':')
+          const icon = t === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping'
+          await store.dispatch('createPocket', { type: t, name, icon })
+        }
+
+  await Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', html: `${addList}${removeList}` })
+        closeModal()
+      } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to create pockets' })
+      }
     }
 
     // Add sort functionality
@@ -829,61 +941,23 @@ export default {
   const addOptions = computed(() => newPocketType.value === 'income' ? incomeCatalog.value : expenseCatalog.value)
     const pocketCatalogByType = (type) => pocketCatalog.value.filter(c => c.type === type)
 
-    const selectedCatalogItem = computed(() => {
-      return pocketCatalog.value.find(c => c.id === newPocket.value.catalogId)
-    })
-
-    const selectedCatalogIcon = computed(() => selectedCatalogItem.value?.icon || 'fa-solid fa-wallet')
-    const editingSelectedItem = computed(() => pocketCatalog.value.find(c => c.id === editingCatalogId.value))
-    const editingSelectedIcon = computed(() => editingSelectedItem.value?.icon || editingPocket.value?.icon || 'fa-solid fa-wallet')
-
-    // Non-standard pockets detection (name not in catalog for the type)
-    const nonStandardPockets = computed(() => {
-      const set = new Set(pocketCatalog.value.filter(c => c.type === 'income').map(c => `income:${c.nameTh}`))
-      pocketCatalog.value.filter(c => c.type === 'expense').forEach(c => set.add(`expense:${c.nameTh}`))
-      return store.state.pockets.filter(p => !set.has(`${p.type}:${p.name}`))
-    })
-
-    const openFirstNonStandard = (type) => {
-      const target = nonStandardPockets.value.find(p => p.type === type) || nonStandardPockets.value[0]
-      if (target) editPocket(target)
-    }
+    // Removed catalog-driven icon previews (now manual selection in modals)
 
     const addNewPocket = async () => {
       try {
-        const item = selectedCatalogItem.value
-        if (!item) throw new Error('กรุณาเลือกหมวดหมู่')
-        // Prevent duplicate creation for the same type and catalog name
-        const exists = store.state.pockets.some(p => p.type === newPocketType.value && p.name === item.nameTh)
+        const name = (newPocket.value.name || '').trim()
+        if (!name) throw new Error('กรุณากรอกชื่อหมวดหมู่')
+        const exists = store.state.pockets.some(p => p.type === newPocketType.value && p.name === name)
         if (exists) {
-          await Swal.fire({
-            icon: 'warning',
-            title: 'มีหมวดหมู่นี้อยู่แล้ว',
-            text: 'คุณได้สร้างหมวดหมู่นี้ไว้แล้วสำหรับประเภทนี้'
-          })
+          await Swal.fire({ icon: 'warning', title: 'มีหมวดหมู่นี้อยู่แล้ว', text: 'คุณได้สร้างหมวดหมู่นี้ไว้แล้วสำหรับประเภทนี้' })
           return
         }
-        const pocket = {
-          name: item.nameTh,
-          icon: item.icon,
-          type: newPocketType.value
-        }
-
+        const pocket = { name, icon: newPocket.value.icon || (newPocketType.value === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping'), type: newPocketType.value }
         await store.dispatch('createPocket', pocket)
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: 'Pocket created successfully!'
-        })
-
+        Swal.fire({ icon: 'success', title: 'Success', text: 'Pocket created successfully!' })
         closeModal()
       } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.message || 'Failed to create pocket'
-        })
+        Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to create pocket' })
       }
     }
 
@@ -893,12 +967,24 @@ export default {
       selectedPocket,
       showModal,
   newPocketType,
-      newPocket,
+  newPocket,
       selectPocket,
       showAddPocketModal,
       closeModal,
-      addNewPocket,
-  addOptions,
+  // preset modal
+  keyOf,
+  presetList,
+  presetSelected,
+  togglePreset,
+  selectRecommended,
+  clearPresetSelection,
+  showCustomPreset,
+  customPresetName,
+  openCustomPreset,
+  cancelCustomPreset,
+  addCustomPreset,
+  createSelectedPresets,
+      
       calculatePocketTotal,
       incomePocketsWithTotals,
       expensePocketsWithTotals,
@@ -945,16 +1031,12 @@ export default {
       months,
       yearRange,
       monthlyPocketTotal,
-      pocketCatalogByType,
-      selectedCatalogIcon,
-  incomeCatalog,
-  expenseCatalog,
-      // edit modal catalog binding
-      editingCatalogId,
-      editingSelectedIcon,
-      // migration helper
-      nonStandardPockets,
-      openFirstNonStandard
+  pocketCatalogByType,
+    incomeCatalog,
+    expenseCatalog,
+    // edit modal fields
+    editingName,
+    editingIcon
     }
   }
 }
@@ -1145,6 +1227,49 @@ export default {
 .icon-option.selected {
   background: var(--primary-color);
   color: white;
+}
+
+/* Preset selector grid */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.preset-card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.preset-card .preset-icon { font-size: 18px }
+.preset-card .preset-name { font-weight: 600 }
+.preset-card.selected { background: #d1fae5; border-color: #10b981 }
+.preset-card.add { border-style: dashed; color: var(--primary-color); justify-content: center }
+.preset-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: none;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+}
+
+/* dashed add button in list */
+.add-dashed {
+  border: 2px dashed #6C63FF;
+  color: #6C63FF;
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @media (max-width: 768px) {
