@@ -1,6 +1,7 @@
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
+try { mongoose.set('strictQuery', true) } catch (_) {}
 const User = require('../../../src/models/User')
 
 async function ensureDb() {

@@ -6,6 +6,7 @@
   "routes": [
     { "src": "^/line-webhook$", "dest": "api/line-webhook.js" },
     { "src": "^/api/auth/line/login$", "dest": "api/auth/line/login.js" },
-    { "src": "^/api/auth/line/callback$", "dest": "api/auth/line/callback.js" }
+    { "src": "^/api/auth/line/callback$", "dest": "api/auth/line/callback.js" },
+    { "src": "^/api/.*", "dest": "api/index.js" }
   ]
 }
