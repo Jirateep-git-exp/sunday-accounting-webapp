@@ -53,15 +53,8 @@
 
     <!-- Main Content Grid -->
     <div class="row g-4 mt-4">
-      <!-- Calendar Column -->
-      <div class="col-12 col-lg-4 order-2 order-lg-1">
-        <div class="card-body calendar-wrapper">
-          <Calendar v-model:selectedDate="selectedDate" />
-        </div>
-      </div>
-
       <!-- Transaction Form Column -->
-      <div class="col-12 col-md-6 col-lg-4 order-1 order-md-2">
+      <div class="col-12 order-1">
         <div class="h-100">
           <div class="mt-3 px-3 pb-3">
             <router-link to="/transaction">
@@ -74,8 +67,15 @@
         </div>
       </div>
 
+      <!-- Calendar Column -->
+      <div class="col-12 col-lg-6 order-lg-2">
+        <div class="card-body calendar-wrapper">
+          <Calendar v-model:selectedDate="selectedDate" />
+        </div>
+      </div>
+
       <!-- Recent Transactions Column -->
-      <div class="col-12 col-lg-4 order-3">
+      <div class="col-12 col-lg-6 order-3">
         <div class="card h-100">
           <div class="card-body">
             <div class="transactions-header">
@@ -119,23 +119,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Multiple Transactions Modal -->
-    <!-- <div v-if="showMultipleModal" class="sa-modal-overlay" @click.self="showMultipleModal = false">
-      <div class="sa-modal-container">
-        <div class="sa-modal-header">
-          <h3>เพิ่มรายการหลายรายการ</h3>
-          <button class="btn btn-outline btn-sm btn-danger" @click="showMultipleModal = false" aria-label="Close">X</button>
-        </div>
-        <div class="sa-modal-body">
-          <multiple-transaction-form
-            :selected-date="selectedDate"
-            @transactions-added="onMultipleTransactionsAdded"
-            @cancel="showMultipleModal = false"
-          />
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 
@@ -144,16 +127,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
 import MultipleTransactionForm from './shared/MultipleTransactionForm.vue'
-import ConnectLine from './shared/ConnectLine.vue'
 import Swal from 'sweetalert2'
-import Settings from './Settings.vue'
 
 export default {
   name: 'Dashboard',
   components: {
     Calendar,
-    MultipleTransactionForm,
-    ConnectLine
+    MultipleTransactionForm
   },
   setup() {
     const store = useStore()
