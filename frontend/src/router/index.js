@@ -7,14 +7,24 @@ import Expenses from '../components/Expenses.vue'
 import Analyze from '../components/Analyze.vue'
 import CloudPocket from '../components/CloudPocket.vue'
 import Settings from '../components/Settings.vue'
+import Onboarding from '../components/Onboarding.vue'
+import ConnectLine from '../components/shared/ConnectLine.vue'
 import Login from '../components/auth/Login.vue'
 import Register from '../components/auth/Register.vue'
 import LoginSuccess from '../components/shared/LoginSuccess.vue'
+import OnboardingIntro from '../components/OnboardingIntro.vue'
+import EditTransaction from '../components/shared/EditTransaction.vue'
 
 const routes = [
   {
     path: '/',
     redirect: '/dashboard'
+  },
+  {
+    path: '/tx/:type/:id/edit',
+    name: 'EditTransaction',
+    component: EditTransaction,
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -59,6 +69,21 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/onboarding',
+    name: 'Onboarding',
+    component: Onboarding
+  },
+  {
+    path: '/getting-started',
+    name: 'OnboardingIntro',
+    component: OnboardingIntro
+  },
+  {
+    path: '/connect-line',
+    name: 'ConnectLine',
+    component: ConnectLine
+  },
+  {
     path: '/analyze',
     name: 'Analyze',
     component: Analyze,
@@ -96,11 +121,12 @@ router.beforeEach(async (to, from, next) => {
     if (isAuthenticated && to.name !== 'Login' && to.name !== 'Register') {
       // Ensure data is loaded
       try {
-        await Promise.all([
-          store.dispatch('fetchPockets'),
-          store.dispatch('fetchIncome'),
-          store.dispatch('fetchExpenses')
-        ])
+        const pockets = await store.dispatch('fetchPockets')
+        // If first time: no pockets -> force onboarding intro unless already there
+        if ((!pockets || pockets.length === 0) && !['OnboardingIntro','Onboarding'].includes(to.name)) {
+          return next({ name: 'OnboardingIntro' })
+        }
+        await Promise.all([store.dispatch('fetchIncome'), store.dispatch('fetchExpenses')])
       } catch (error) {
         console.error('Error loading data:', error)
       }

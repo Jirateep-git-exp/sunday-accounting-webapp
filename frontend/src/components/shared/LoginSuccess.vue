@@ -45,7 +45,7 @@ export default {
         return router.push('/dashboard')
       }
 
-      if (token) {
+  if (token) {
         // ✅ บันทึก token อย่างปลอดภัยและตั้งค่า expiry (6 ชั่วโมง)
         store.commit('setToken', token)
         const expireAt = Date.now() + 6 * 60 * 60 * 1000
@@ -86,7 +86,8 @@ export default {
           return router.push('/login')
         }
 
-        router.push('/dashboard')
+        const redirect = route.query.redirect && typeof route.query.redirect === 'string' ? decodeURIComponent(route.query.redirect) : '/dashboard'
+        router.push(redirect)
       } else {
         console.error('❌ No token found in query parameters')
         router.push('/login')
