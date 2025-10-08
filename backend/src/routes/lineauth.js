@@ -8,6 +8,11 @@ const qs = require('querystring')
 
 const router = express.Router()
 
+// Helper: frontend base URL for redirects (supports deploy)
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
+const LINE_OA_ADD_FRIEND_URL = process.env.LINE_OA_ADD_FRIEND_URL || ''
+const go = (res, path) => res.redirect(`${FRONTEND_BASE_URL}${path}`)
+
 // Create a short-lived state token to link a LINE account to the current user
 router.post('/line/link-state', auth, async (req, res) => {
   try {
@@ -24,11 +29,11 @@ router.get('/line/callback', async (req, res) => {
 
   if (error) {
     console.error('LINE Login error from LINE:', error)
-    return res.redirect(`http://localhost:3000/login?error=${error}`)
+    return go(res, `/login?error=${encodeURIComponent(error)}`)
   }
   
   if (!code) {
-    return res.redirect('http://localhost:3000/login?error=no_code')
+    return go(res, '/login?error=no_code')
   }
 
   try {
@@ -65,12 +70,12 @@ router.get('/line/callback', async (req, res) => {
       const conflict = await User.findOne({ lineUserId: userId, _id: { $ne: payload.id } })
       if (conflict) {
         // Reject linking if this LINE account is already attached to another user (LINE-only or not)
-        return res.redirect('http://localhost:3000/login-success?error=lineid_in_use')
+        return go(res, '/login-success?error=lineid_in_use')
       }
 
       const currentUser = await User.findById(payload.id)
       if (!currentUser) {
-        return res.redirect('http://localhost:3000/login-success?error=user_not_found')
+        return go(res, '/login-success?error=user_not_found')
       }
       currentUser.lineUserId = userId
       // keep existing username/email; fill avatar if empty
@@ -78,16 +83,17 @@ router.get('/line/callback', async (req, res) => {
       await currentUser.save()
 
       // Redirect back to app indicating linking success (no token change required)
-  return res.redirect('http://localhost:3000/login-success?linked=true')
+      return go(res, '/login-success?linked=true')
     } catch (err) {
       console.error('Link LINE error:', err)
-      return res.redirect('http://localhost:3000/login-success?error=link_failed')
+      return go(res, '/login-success?error=link_failed')
     }
   }
 
   // Otherwise: login/signup via LINE
   // Ensure a User exists and is linked to this LINE account
   let user = await User.findOne({ lineUserId: userId })
+  let isFirstLogin = false
   if (!user) {
     // Create a new app User for this LINE profile
     user = new User({
@@ -99,12 +105,18 @@ router.get('/line/callback', async (req, res) => {
       avatar: pictureUrl
     })
     await user.save()
+    isFirstLogin = true
   }
 
   // Sign JWT with the core User id so auth middleware can validate
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '6h' })
 
-  res.redirect(`http://localhost:3000/login-success?token=${token}`)
+  const params = new URLSearchParams({ token })
+  if (isFirstLogin) {
+    params.set('first', 'true')
+    if (LINE_OA_ADD_FRIEND_URL) params.set('addfriend', LINE_OA_ADD_FRIEND_URL)
+  }
+  return go(res, `/login-success?${params.toString()}`)
 
 } catch (err) {
     console.error('LINE Login error:', err.response?.data || err.message)
