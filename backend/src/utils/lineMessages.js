@@ -47,6 +47,24 @@ function buildHelpMessage() {
   }
 }
 
+// A lightweight typing indicator using a plain ellipsis text bubble
+function buildTypingMessage() {
+  return {
+    type: 'text',
+    text: '…', // single-character ellipsis for a minimal typing look
+  }
+}
+
+// Optional: image-based typing indicator (e.g., an animated GIF URL)
+function buildTypingImageMessage(url) {
+  if (!url) return buildTypingMessage()
+  return {
+    type: 'image',
+    originalContentUrl: url,
+    previewImageUrl: url,
+  }
+}
+
 // flex การบันทึกรายการ
 function buildConfirmFlex({ description, amount, pocketName, type, transactionId }, opts = {}) {
   const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
@@ -189,11 +207,36 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
   }
 }
 
+// flex ยกเลิกรายการเรียบร้อย
+function buildCancelSuccessFlex() {
+  return {
+    type: 'flex',
+    altText: 'ยกเลิกรายการเรียบร้อย',
+    contents: {
+      type: 'bubble',
+      size: 'mega',
+      styles: {
+        header: { backgroundColor: THEME.cardBg },
+        body: { backgroundColor: THEME.cardBg },
+        footer: { backgroundColor: THEME.cardBg },
+      },
+      body: {
+        type: 'box', layout: 'vertical', paddingAll: '16px', contents: [
+          { type: 'text', text: 'ยกเลิกรายการเรียบร้อย', weight: 'bold', size: 'lg', color: THEME.text },
+        ],
+      },
+    },
+  }
+}
+
 module.exports = {
   buildHelpMessage,
   buildConfirmFlex,
   buildSummaryFlex,
+  buildCancelSuccessFlex,
   buildOnboardingFlex,
+  buildTypingMessage,
+  buildTypingImageMessage,
 }
 
 // Extra: build a pockets overview Flex (grouped by income/expense)

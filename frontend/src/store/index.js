@@ -6,7 +6,7 @@ const API_URL =
   process.env.VITE_API_URL ||
   'http://localhost:5000/api'
 
-export default createStore({
+const store = createStore({
   state() {
     // Read token safely: treat 'null'/'undefined'/'' as no token
     const rawToken = localStorage.getItem('token')
@@ -27,10 +27,18 @@ export default createStore({
       expenses: [],
       incomePockets: [],
       expensePockets: [],
-      pockets: []
+      pockets: [],
+      // Global loading counter for concurrent requests
+      loadingCount: 0,
     }
   },
   mutations: {
+    startLoading(state) {
+      state.loadingCount = Math.max(0, state.loadingCount) + 1
+    },
+    stopLoading(state) {
+      state.loadingCount = Math.max(0, state.loadingCount - 1)
+    },
     setUser(state, user) {
       state.user = user
       if (user) {
@@ -315,6 +323,7 @@ export default createStore({
   },
   getters: {
     isAuthenticated: state => !!state.token,
+    isLoading: state => state.loadingCount > 0,
     getUser: state => state.user,
     incomePockets: state => state.pockets.filter(p => p.type === 'income'),
     expensePockets: state => state.pockets.filter(p => p.type === 'expense'),
@@ -336,3 +345,33 @@ export default createStore({
     }
   }
 })
+
+// Setup global axios interceptors to toggle loading state for all API calls
+let interceptorsInstalled = false
+if (!interceptorsInstalled) {
+  axios.interceptors.request.use(
+    (config) => {
+      // Skip non-HTTP requests just in case
+      store.commit('startLoading')
+      return config
+    },
+    (error) => {
+      store.commit('stopLoading')
+      return Promise.reject(error)
+    }
+  )
+
+  axios.interceptors.response.use(
+    (response) => {
+      store.commit('stopLoading')
+      return response
+    },
+    (error) => {
+      store.commit('stopLoading')
+      return Promise.reject(error)
+    }
+  )
+  interceptorsInstalled = true
+}
+
+export default store

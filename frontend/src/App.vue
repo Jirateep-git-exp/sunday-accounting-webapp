@@ -6,6 +6,8 @@
         <router-view />
       </div>
     </main>
+    <!-- Global loading overlay -->
+    <LoadingOverlay />
   </div>
 </template>
 
@@ -14,11 +16,13 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import Navbar from './components/shared/Navbar.vue'
+import LoadingOverlay from './components/shared/LoadingOverlay.vue'
 
 export default {
   name: 'App',
   components: {
-    Navbar
+    Navbar,
+    LoadingOverlay
   },
   setup() {
     const store = useStore()

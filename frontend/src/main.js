@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import loadingDisable from './directives/loading-disable'
 
 // Import styles
 import './assets/styles/main.scss'
@@ -25,6 +26,9 @@ checkTokenExpire()
 
 app.use(router)
 app.use(store)
+
+// Register directive
+app.directive('loading-disable', loadingDisable)
 
 // ตรวจสอบ token ทุกครั้งที่เปลี่ยน route
 router.beforeEach((to, from, next) => {

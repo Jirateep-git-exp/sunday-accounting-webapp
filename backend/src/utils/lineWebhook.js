@@ -5,7 +5,7 @@ const Pocket = require('../models/Pocket')
 const Income = require('../models/Income')
 const Expense = require('../models/Expense')
 const User = require('../models/User');
-const { buildHelpMessage, buildConfirmFlex, buildSummaryFlex, buildPocketsFlex, buildOnboardingFlex } = require('./lineMessages')
+const { buildHelpMessage, buildConfirmFlex, buildSummaryFlex, buildPocketsFlex, buildOnboardingFlex, buildCancelSuccessFlex, buildTypingMessage, buildTypingImageMessage } = require('./lineMessages')
 const TimeZone = process.env.APP_TIMEZONE || 'Asia/Bangkok'
 const catalog = require('./pocketCatalog')
 const authService = require('../services/authService')
@@ -15,6 +15,7 @@ const router = express.Router()
 
 const LINE_REPLY_URL = 'https://api.line.me/v2/bot/message/reply'
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN
+const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push'
 const MONGODB_URI = process.env.MONGODB_URI
 
 async function ensureDb() {
@@ -56,7 +57,7 @@ async function processEvent(event) {
         return
       }
       await Model.deleteOne({ _id: params.tid, userId: user._id })
-      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [{ type: 'text', text: 'ยกเลิกรายการเรียบร้อย' }] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [buildCancelSuccessFlex()] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
       return
     }
     return
@@ -85,21 +86,51 @@ async function processEvent(event) {
     return
   }
 
+  // helper: create a delayed typing reply controller
+  const createTypingController = (event, headers, delayMs = Number(process.env.LINE_TYPING_DELAY_MS || 700)) => {
+    let replied = false
+    let done = false
+    const typingImageUrl = process.env.LINE_TYPING_IMAGE_URL // optional animated typing image URL (GIF/PNG)
+    const timer = setTimeout(async () => {
+      if (!done && !replied) {
+        try {
+          const typingMsg = typingImageUrl ? buildTypingImageMessage(typingImageUrl) : buildTypingMessage()
+          await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [typingMsg] }, headers)
+          replied = true
+        } catch (_) {}
+      }
+    }, delayMs)
+    return {
+      replied: () => replied,
+      done: () => { done = true; clearTimeout(timer) },
+    }
+  }
+
   // list pockets
   if (/^(ดูหมวดหมู่|หมวดหมู่ของฉัน)$/.test(text)) {
+    const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
+    const typing = createTypingController(event, headers)
+
     const [incomePockets, expensePockets] = await Promise.all([
       Pocket.find({ userId: user._id, type: 'income' }).select('name icon').lean(),
       Pocket.find({ userId: user._id, type: 'expense' }).select('name icon').lean(),
     ])
     const token = authService.generateToken(user)
     const pocketsFlex = buildPocketsFlex({ incomePockets, expensePockets }, { token })
-    await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [pocketsFlex] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+    typing.done()
+    if (typing.replied()) {
+      await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [pocketsFlex] }, headers)
+    } else {
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [pocketsFlex] }, headers)
+    }
     return
   }
 
   // handle range summary: "สรุป 7 วัน"
   const rangeMatch = text.match(/^สรุป\s*(\d+)\s*วัน$/)
   if (rangeMatch) {
+    const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
+    const typing = createTypingController(event, headers)
     const days = Math.max(1, parseInt(rangeMatch[1], 10))
   const now = new Date()
   // Create start/end using local time in Bangkok by compensating from UTC offset of that zone
@@ -120,12 +151,19 @@ async function processEvent(event) {
   const token = authService.generateToken(user)
   const summaryFlex = buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, { token })
 
-    await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [summaryFlex] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+    typing.done()
+    if (typing.replied()) {
+      await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [summaryFlex] }, headers)
+    } else {
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [summaryFlex] }, headers)
+    }
     return
   }
 
   // summary today
   if (/^สรุปวันนี้$/.test(text) || /^today\s*summary$/i.test(text)) {
+  const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
+  const typing = createTypingController(event, headers)
   const now2 = new Date()
   const toLocal2 = (d) => new Date(d.toLocaleString('en-US', { timeZone: TimeZone }))
   const start = toLocal2(now2); start.setHours(0,0,0,0)
@@ -138,7 +176,12 @@ async function processEvent(event) {
     const totalExpense = expenses.reduce((s, e) => s + (e.amount || 0), 0)
   const token = authService.generateToken(user)
   const summaryFlex = buildSummaryFlex({ totalIncome, totalExpense, title: 'สรุปวันนี้' }, { token })
-    await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [summaryFlex] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+    typing.done()
+    if (typing.replied()) {
+      await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [summaryFlex] }, headers)
+    } else {
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [summaryFlex] }, headers)
+    }
     return
   }
 
@@ -146,6 +189,8 @@ async function processEvent(event) {
   // supports: "ข้าวมันไก่ 55", "มาม่า100", "กาแฟ-45", "โบนัส+1000"
   const match = text.match(/^(.+?)(?:\s*|\s*[-+]?)(-?\d+)(?:\s*บาท)?$/i)
   if (match) {
+  const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
+  const typing = createTypingController(event, headers)
     const description = match[1]
     const amount = Number(match[2])
   const pocketInfo = guessPocket(description)
@@ -197,7 +242,13 @@ async function processEvent(event) {
     }
 
     if (!pocket) {
-      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [{ type: 'text', text: `ไม่พบหมวด "${pocketInfo.name}" กรุณาสร้างหมวดนี้ก่อนใน Cloud Pocket หรือใส่ชื่อหมวดในข้อความ เช่น "ชื่อหมวด 100"` }] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+      const msg = { type: 'text', text: `ไม่พบหมวด "${pocketInfo.name}" กรุณาสร้างหมวดนี้ก่อนใน Cloud Pocket หรือใส่ชื่อหมวดในข้อความ เช่น "ชื่อหมวด 100"` }
+      typing.done()
+      if (typing.replied()) {
+        await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [msg] }, headers)
+      } else {
+        await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [msg] }, headers)
+      }
       return
     }
 
@@ -211,7 +262,12 @@ async function processEvent(event) {
     // ตอบกลับ LINE (Flex)
     const token = authService.generateToken(user)
     const flex = buildConfirmFlex({ description, amount, pocketName: pocket.name, type: pocket.type, transactionId: created?._id }, { token })
-    await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [flex] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+    typing.done()
+    if (typing.replied()) {
+      await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [flex] }, headers)
+    } else {
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [flex] }, headers)
+    }
     return
   }
 
