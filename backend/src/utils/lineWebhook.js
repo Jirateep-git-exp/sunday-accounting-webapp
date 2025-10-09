@@ -6,6 +6,7 @@ const Income = require('../models/Income')
 const Expense = require('../models/Expense')
 const User = require('../models/User');
 const { buildHelpMessage, buildConfirmFlex, buildSummaryFlex, buildPocketsFlex, buildOnboardingFlex } = require('./lineMessages')
+const TimeZone = process.env.APP_TIMEZONE || 'Asia/Bangkok'
 const catalog = require('./pocketCatalog')
 const authService = require('../services/authService')
 const mongoose = require('mongoose')
@@ -100,19 +101,22 @@ async function processEvent(event) {
   const rangeMatch = text.match(/^สรุป\s*(\d+)\s*วัน$/)
   if (rangeMatch) {
     const days = Math.max(1, parseInt(rangeMatch[1], 10))
-    const end = new Date(); end.setHours(23,59,59,999)
-    const start = new Date(); start.setHours(0,0,0,0); start.setDate(start.getDate() - (days - 1))
+  const now = new Date()
+  // Create start/end using local time in Bangkok by compensating from UTC offset of that zone
+  const toLocal = (d) => new Date(d.toLocaleString('en-US', { timeZone: TimeZone }))
+  const endLocal = toLocal(now); endLocal.setHours(23,59,59,999)
+  const startLocal = toLocal(now); startLocal.setHours(0,0,0,0); startLocal.setDate(startLocal.getDate() - (days - 1))
 
     const [incomes, expenses] = await Promise.all([
-      Income.find({ userId: user._id, date: { $gte: start, $lte: end } }),
-      Expense.find({ userId: user._id, date: { $gte: start, $lte: end } }),
+      Income.find({ userId: user._id, date: { $gte: startLocal, $lte: endLocal } }),
+      Expense.find({ userId: user._id, date: { $gte: startLocal, $lte: endLocal } }),
     ])
     const totalIncome = incomes.reduce((s, i) => s + (i.amount || 0), 0)
     const totalExpense = expenses.reduce((s, e) => s + (e.amount || 0), 0)
 
-    const fmt = (d) => d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' })
+  const fmt = (d) => new Date(d).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', timeZone: TimeZone })
     const title = `สรุป ${days} วัน`
-    const subtitle = `${fmt(start)} - ${fmt(end)}`
+  const subtitle = `${fmt(startLocal)} - ${fmt(endLocal)}`
   const token = authService.generateToken(user)
   const summaryFlex = buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, { token })
 
@@ -122,8 +126,10 @@ async function processEvent(event) {
 
   // summary today
   if (/^สรุปวันนี้$/.test(text) || /^today\s*summary$/i.test(text)) {
-    const start = new Date(); start.setHours(0,0,0,0)
-    const end = new Date(); end.setHours(23,59,59,999)
+  const now2 = new Date()
+  const toLocal2 = (d) => new Date(d.toLocaleString('en-US', { timeZone: TimeZone }))
+  const start = toLocal2(now2); start.setHours(0,0,0,0)
+  const end = toLocal2(now2); end.setHours(23,59,59,999)
     const [incomes, expenses] = await Promise.all([
       Income.find({ userId: user._id, date: { $gte: start, $lte: end } }),
       Expense.find({ userId: user._id, date: { $gte: start, $lte: end } }),
@@ -195,8 +201,9 @@ async function processEvent(event) {
       return
     }
 
-    // สร้าง transaction
-    const transactionData = { amount, description, date: new Date(), pocketId: pocket._id, userId: user._id, createdByEmail: user.email }
+  // สร้าง transaction โดยใช้เวลาโซนเอเชีย/กรุงเทพ (แปลงจาก UTC ไปเป็น local time ก่อนเก็บ)
+  const nowLocal = new Date(new Date().toLocaleString('en-US', { timeZone: TimeZone }))
+  const transactionData = { amount, description, date: nowLocal, pocketId: pocket._id, userId: user._id, createdByEmail: user.email }
     let created
     if (pocket.type === 'income') created = await Income.create(transactionData)
     else created = await Expense.create(transactionData)

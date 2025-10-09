@@ -19,6 +19,19 @@ const THEME = {
   brand: '#6C63FF',
 }
 
+// Default application timezone for display (server runs in UTC)
+const TimeZone = process.env.APP_TIMEZONE || 'Asia/Bangkok'
+
+function formatThaiDate(date) {
+  const d = date ? new Date(date) : new Date()
+  return d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', timeZone: TimeZone })
+}
+
+function formatThaiTime(date) {
+  const d = date ? new Date(date) : new Date()
+  return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: TimeZone })
+}
+
 function formatCurrency(amount) {
   try {
     return amount.toLocaleString('th-TH')
@@ -34,6 +47,7 @@ function buildHelpMessage() {
   }
 }
 
+// flex การบันทึกรายการ
 function buildConfirmFlex({ description, amount, pocketName, type, transactionId }, opts = {}) {
   const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
   // Deep link directly to the edit page for this transaction
@@ -45,9 +59,8 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
   const palette = type === 'income' ? THEME.income : THEME.expense
   const title = type === 'income' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย'
   const amountText = `${sign}${formatCurrency(amount)} บาท`
-  const today = new Date()
-  const dateText = today.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' })
-  const timeText = today.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+  const dateText = formatThaiDate()
+  const timeText = formatThaiTime()
 
   return {
     type: 'flex',
@@ -121,13 +134,14 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
   }
 }
 
+// flex สรุปวันนี้
 function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts = {}) {
   const appBase = opts.appBase || process.env.FRONTEND_BASE_URL || 'http://localhost:3000'
   const openUri = opts.token
     ? `${appBase}/login-success?token=${encodeURIComponent(opts.token)}&redirect=${encodeURIComponent('/dashboard')}`
     : `${appBase}`
   const balance = totalIncome - totalExpense
-  const dateText = new Date().toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short' })
+  const dateText = new Date().toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short', timeZone: TimeZone })
   const headerTitle = title || 'สรุปวันนี้'
   const headerSubtitle = subtitle || dateText
   return {
