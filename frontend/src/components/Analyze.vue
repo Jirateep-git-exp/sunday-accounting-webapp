@@ -24,45 +24,43 @@
                 <div class="modal-body">
                   <div class="row g-3 mb-3">
                     <div class="col-12 col-md-6">
-                      <label>เดือนที่ 1</label>
+                      <label>Month 1</label>
                       <select v-model="compareMonth1" class="form-select">
                         <option v-for="(month, idx) in months" :key="idx" :value="idx">{{ month }}</option>
                       </select>
                     </div>
                     <div class="col-12 col-md-6">
-                      <label>ปีที่ 1</label>
+                      <label>Year 1</label>
                       <select v-model="compareYear1" class="form-select">
-                        <option v-for="year in yearRange" :key="year" :value="year">{{ year + 543 }}</option>
+                        <option v-for="year in yearRange" :key="year" :value="year">{{ year }}</option>
                       </select>
                     </div>
                     <div class="col-12 col-md-6">
-                      <label>เดือนที่ 2</label>
+                      <label>Month 2</label>
                       <select v-model="compareMonth2" class="form-select">
                         <option v-for="(month, idx) in months" :key="idx" :value="idx">{{ month }}</option>
                       </select>
                     </div>
                     <div class="col-12 col-md-6">
-                      <label>ปีที่ 2</label>
+                      <label>Year 2</label>
                       <select v-model="compareYear2" class="form-select">
-                        <option v-for="year in yearRange" :key="year" :value="year">{{ year + 543 }}</option>
+                        <option v-for="year in yearRange" :key="year" :value="year">{{ year }}</option>
                       </select>
                     </div>
                   </div>
                   <div class="compare-result mt-3">
-                    <h5>ผลเปรียบเทียบ</h5>
+                    <h5>Comparison</h5>
                     <div class="row g-3">
                       <div class="col-12 col-md-6">
                         <div class="card p-3">
-                          <h6 class="mb-2">{{ months[compareMonth1] }} {{ compareYear1 + 543 }}</h6>
-                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth1, compareYear1))
-                          }} ฿</div>
+                          <h6 class="mb-2">{{ months[compareMonth1] }} {{ compareYear1 }}</h6>
+                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth1, compareYear1)) }}</div>
                         </div>
                       </div>
                       <div class="col-12 col-md-6">
                         <div class="card p-3">
-                          <h6 class="mb-2">{{ months[compareMonth2] }} {{ compareYear2 + 543 }}</h6>
-                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth2, compareYear2))
-                          }} ฿</div>
+                          <h6 class="mb-2">{{ months[compareMonth2] }} {{ compareYear2 }}</h6>
+                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth2, compareYear2)) }}</div>
                         </div>
                       </div>
                     </div>
@@ -70,16 +68,16 @@
                       <span
                         v-if="expenseTotalMonth(compareMonth1, compareYear1) > expenseTotalMonth(compareMonth2, compareYear2)"
                         class="text-success">
-                        เดือนที่ 1 มีรายจ่ายมากกว่าเดือนที่ 2 {{ formatAmount(expenseTotalMonth(compareMonth1,
-                          compareYear1) - expenseTotalMonth(compareMonth2, compareYear2)) }} ฿
+                        Month 1 has higher expenses than month 2 by {{ formatAmount(expenseTotalMonth(compareMonth1,
+                          compareYear1) - expenseTotalMonth(compareMonth2, compareYear2)) }}
                       </span>
                       <span
                         v-else-if="expenseTotalMonth(compareMonth1, compareYear1) < expenseTotalMonth(compareMonth2, compareYear2)"
                         class="text-danger">
-                        เดือนที่ 2 มีรายจ่ายมากกว่าเดือนที่ 1 {{ formatAmount(expenseTotalMonth(compareMonth2,
-                          compareYear2) - expenseTotalMonth(compareMonth1, compareYear1)) }} ฿
+                        Month 2 has higher expenses than month 1 by {{ formatAmount(expenseTotalMonth(compareMonth2,
+                          compareYear2) - expenseTotalMonth(compareMonth1, compareYear1)) }}
                       </span>
-                      <span v-else class="text-muted">รายจ่ายเท่ากันทั้งสองเดือน</span>
+                      <span v-else class="text-muted">Expenses are equal for both months</span>
                     </div>
                   </div>
                 </div>
@@ -89,7 +87,7 @@
               <span class="input-group-text"><i class="fa-solid fa-calendar-days"></i></span>
               <select v-model="selectedYear" class="form-select">
                 <option v-for="year in yearRange" :key="year" :value="year">
-                  {{ year + 543 }}
+                  {{ year }}
                 </option>
               </select>
             </div>
@@ -100,15 +98,15 @@
         <div class="action-buttons d-flex gap-2">
           <button class="btn btn-outline-secondary" type="button" @click="showCompareModal = true">
             <i class="fa-solid fa-chart-column me-2"></i>
-            เปรียบเทียบรายจ่าย
+            Compare expenses
           </button>
           <div class="dropdown">
             <button class="btn btn-primary" type="button" data-bs-toggle="dropdown">
               <i class="fa-solid fa-download me-2"></i>
-              ดาวน์โหลด
+              Export
             </button>
             <ul class="dropdown-menu">
-              <li class="dropdown-header">เลือกประเภทรายการ</li>
+              <li class="dropdown-header">Choose type</li>
               <li>
                 <hr class="dropdown-divider">
               </li>
@@ -117,26 +115,26 @@
                   <div class="form-check mb-2">
                     <input class="form-check-input" type="radio" v-model="exportType" value="all" id="exportAll">
                     <label class="form-check-label" for="exportAll">
-                      ทั้งรายรับและรายจ่าย
+                      All (income + expenses)
                     </label>
                   </div>
                   <div class="form-check mb-2">
                     <input class="form-check-input" type="radio" v-model="exportType" value="income" id="exportIncome">
                     <label class="form-check-label" for="exportIncome">
-                      รายรับ
+                      Income
                     </label>
                   </div>
                   <div class="form-check mb-3">
                     <input class="form-check-input" type="radio" v-model="exportType" value="expense"
                       id="exportExpense">
                     <label class="form-check-label" for="exportExpense">
-                      รายจ่าย
+                      Expense
                     </label>
                   </div>
                   <div class="d-grid gap-2">
                     <button class="btn btn-sm btn-outline-success" @click="exportToViewExcel">
                       <i class="bi bi-file-earmark-spreadsheet me-1"></i>
-                      ดาวน์โหลดรายงาน Excel
+                      Download Excel report
                     </button>
                   </div>
                 </div>
@@ -158,7 +156,7 @@
               </div>
               <div>
                 <h6 class="mb-1">รายรับทั้งหมด</h6>
-                <h3 class="mb-0 text-success">{{ formatAmount(totalIncome) }} ฿</h3>
+                <h3 class="mb-0 text-success">{{ formatAmount(totalIncome) }}</h3>
               </div>
             </div>
           </div>
@@ -174,7 +172,7 @@
               </div>
               <div>
                 <h6 class="mb-1">รายจ่ายทั้งหมด</h6>
-                <h3 class="mb-0 text-danger">{{ formatAmount(totalExpenses) }} ฿</h3>
+                <h3 class="mb-0 text-danger">{{ formatAmount(totalExpenses) }}</h3>
               </div>
             </div>
           </div>
@@ -190,7 +188,7 @@
               </div>
               <div>
                 <h6 class="mb-1">คงเหลือ</h6>
-                <h3 class="mb-0 text-primary">{{ formatAmount(balance) }} ฿</h3>
+                <h3 class="mb-0 text-primary">{{ formatAmount(balance) }}</h3>
               </div>
             </div>
           </div>
@@ -204,13 +202,13 @@
       <div class="col-12 col-lg-6">
         <div class="card h-100">
           <div class="card-body">
-            <h5 class="card-title mb-4">สัดส่วนรายรับตามหมวดหมู่</h5>
+            <h5 class="card-title mb-4">Income by category</h5>
             <div v-if="incomeChartData.labels.length > 0" class="chart-container">
               <canvas ref="incomeChart"></canvas>
             </div>
             <div v-else class="empty-state">
               <i class="bi bi-pie-chart"></i>
-              <p>ไม่พบข้อมูลรายรับในช่วงเวลาที่เลือก</p>
+              <p>No income data in the selected period</p>
             </div>
           </div>
         </div>
@@ -220,13 +218,13 @@
       <div class="col-12 col-lg-6">
         <div class="card h-100">
           <div class="card-body">
-            <h5 class="card-title mb-4">สัดส่วนรายจ่ายตามหมวดหมู่</h5>
+            <h5 class="card-title mb-4">Expenses by category</h5>
             <div v-if="expenseChartData.labels.length > 0" class="chart-container">
               <canvas ref="expenseChart"></canvas>
             </div>
             <div v-else class="empty-state">
               <i class="bi bi-pie-chart"></i>
-              <p>ไม่พบข้อมูลรายจ่ายในช่วงเวลาที่เลือก</p>
+              <p>No expense data in the selected period</p>
             </div>
           </div>
         </div>
@@ -241,11 +239,10 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h5 class="card-title mb-0">
                 {{
-                  selectedType === 'income' ? 'รายการรายรับ' :
-                    selectedType === 'expense' ? 'รายการรายจ่าย' :
-                      'รายการทั้งหมด'
-                }}
-                ประจำเดือน {{ months[selectedMonth] }} {{ selectedYear + 543 }}
+                  selectedType === 'income' ? 'Income' :
+                    selectedType === 'expense' ? 'Expenses' :
+                      'All transactions'
+                }} for {{ months[selectedMonth] }} {{ selectedYear }}
               </h5>
               <button class="btn-close" @click="showDetails = false"></button>
             </div>
@@ -255,23 +252,23 @@
                 <thead>
                   <tr>
                     <th @click="sort('date')" :class="{ 'sortable': true }">
-                      วันที่
+                      Date
                       <i v-if="getSortIcon('date')" :class="getSortIcon('date')"></i>
                     </th>
                     <th @click="sort('type')" :class="{ 'sortable': true }">
-                      ประเภท
+                      Type
                       <i v-if="getSortIcon('type')" :class="getSortIcon('type')"></i>
                     </th>
                     <th @click="sort('category')" :class="{ 'sortable': true }">
-                      หมวดหมู่
+                      Category
                       <i v-if="getSortIcon('category')" :class="getSortIcon('category')"></i>
                     </th>
                     <th @click="sort('description')" :class="{ 'sortable': true }">
-                      รายละเอียด
+                      Description
                       <i v-if="getSortIcon('description')" :class="getSortIcon('description')"></i>
                     </th>
                     <th @click="sort('amount')" class="text-end sortable">
-                      จำนวนเงิน
+                      Amount
                       <i v-if="getSortIcon('amount')" :class="getSortIcon('amount')"></i>
                     </th>
                   </tr>
@@ -280,16 +277,16 @@
                   <tr v-for="item in paginatedData" :key="item.id"
                     :class="item.type === 'income' ? 'table-success' : 'table-danger'">
                     <td>{{ formatDate(item.date) }}</td>
-                    <td>{{ item.type === 'income' ? 'รายรับ' : 'รายจ่าย' }}</td>
+                    <td>{{ item.type === 'income' ? 'Income' : 'Expense' }}</td>
                     <td>{{ getPocketName(item.pocketId, item.type) }}</td>
                     <td>{{ item.description }}</td>
-                    <td class="text-end">{{ formatAmount(item.amount) }} ฿</td>
+                    <td class="text-end">{{ formatAmount(item.amount) }}</td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr class="table-light fw-bold">
-                    <td colspan="4" class="text-end">รวม</td>
-                    <td class="text-end">{{ formatAmount(totalAmount) }} ฿</td>
+                    <td colspan="4" class="text-end">Total</td>
+                    <td class="text-end">{{ formatAmount(totalAmount) }}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -300,15 +297,15 @@
               <button class="btn btn-outline-primary" @click="currentPage = Math.max(1, currentPage - 1)"
                 :disabled="currentPage === 1">
                 <i class="fa-solid fa-chevron-left"></i>
-                ก่อนหน้า
+                Previous
               </button>
               <span class="current-page">
-                หน้า {{ currentPage }} / {{ Math.ceil(sortedData.length / itemsPerPage) }}
+                Page {{ currentPage }} / {{ Math.ceil(sortedData.length / itemsPerPage) }}
               </span>
               <button class="btn btn-outline-primary"
                 @click="currentPage = Math.min(Math.ceil(sortedData.length / itemsPerPage), currentPage + 1)"
                 :disabled="currentPage === Math.ceil(sortedData.length / itemsPerPage)">
-                ถัดไป
+                Next
                 <i class="fa-solid fa-chevron-right"></i>
               </button>
             </div>
@@ -325,6 +322,7 @@ import { useStore } from 'vuex'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
+import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'Analyze',
@@ -344,11 +342,9 @@ export default {
     const compareMonth2 = ref(new Date().getMonth())
     const compareYear2 = ref(new Date().getFullYear())
 
-    const months = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
+    const months = Array.from({ length: 12 }, (_, i) =>
+      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+    )
 
     const currentYear = new Date().getFullYear()
     const yearRange = Array.from(
@@ -427,9 +423,7 @@ export default {
     })
 
     // Methods
-    const formatAmount = (amount) => {
-      return Number(amount).toLocaleString('th-TH')
-    }
+  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
     const createChart = (canvas, data, type) => {
       // Pastel colors for income
@@ -535,21 +529,21 @@ export default {
 
       if (exportType.value === 'all' || exportType.value === 'income') {
         data.income = filteredIncome.value.map(item => ({
-          date: new Date(item.date).toLocaleDateString('th-TH'),
-          type: 'รายรับ',
-          category: store.state.pockets.find(p => p._id === item.pocketId)?.name || 'ไม่ระบุ',
+          date: formatDateLocal(item.date),
+          type: 'Income',
+          category: store.state.pockets.find(p => p._id === item.pocketId)?.name || 'Uncategorized',
           description: item.description,
-          amount: Number(item.amount).toLocaleString('th-TH')
+          amount: formatAmountLocal(item.amount)
         }))
       }
 
       if (exportType.value === 'all' || exportType.value === 'expense') {
         data.expense = filteredExpenses.value.map(item => ({
-          date: new Date(item.date).toLocaleDateString('th-TH'),
-          type: 'รายจ่าย',
-          category: store.state.pockets.find(p => p._id === item.pocketId)?.name || 'ไม่ระบุ',
+          date: formatDateLocal(item.date),
+          type: 'Expense',
+          category: store.state.pockets.find(p => p._id === item.pocketId)?.name || 'Uncategorized',
           description: item.description,
-          amount: Number(item.amount).toLocaleString('th-TH')
+          amount: formatAmountLocal(item.amount)
         }))
       }
 
@@ -564,14 +558,14 @@ export default {
         const data = getExportData()
 
         const summaryRows = [
-          ['รายงานรายรับรายจ่าย', '', '', '', ''],
-          [`เดือน: ${months[selectedMonth.value]}`, '', '', '', ''],
-          [`ปี: ${selectedYear.value + 543}`, '', '', '', ''],
-          ['รวมรายรับ', formatAmount(totalIncome.value), '', '', ''],
-          ['รวมรายจ่าย', formatAmount(totalExpenses.value), '', '', ''],
-          ['คงเหลือ', formatAmount(balance.value), '', '', ''],
-          [], // เว้นบรรทัด
-          ['วันที่', 'ประเภท', 'หมวดหมู่', 'รายละเอียด', 'จำนวนเงิน']
+          ['Income & Expense report', '', '', '', ''],
+          [`Month: ${months[selectedMonth.value]}`, '', '', '', ''],
+          [`Year: ${selectedYear.value}`, '', '', '', ''],
+          ['Total income', formatAmount(totalIncome.value), '', '', ''],
+          ['Total expenses', formatAmount(totalExpenses.value), '', '', ''],
+          ['Balance', formatAmount(balance.value), '', '', ''],
+          [],
+          ['Date', 'Type', 'Category', 'Description', 'Amount']
         ]
 
         // รวม summary กับข้อมูลหลัก
@@ -591,25 +585,25 @@ export default {
 
         // ปรับแต่งความกว้างคอลัมน์
         const wscols = [
-          { wch: 12 }, // วันที่
-          { wch: 10 }, // ประเภท
-          { wch: 15 }, // หมวดหมู่
-          { wch: 30 }, // รายละเอียด
-          { wch: 12 }  // จำนวนเงิน
+          { wch: 12 },
+          { wch: 10 },
+          { wch: 15 },
+          { wch: 30 },
+          { wch: 12 }
         ]
         ws['!cols'] = wscols
 
         const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, 'รายงาน')
+        XLSX.utils.book_append_sheet(wb, ws, 'Report')
 
         // บันทึกไฟล์
-        XLSX.writeFile(wb, `รายงานรายรับรายจ่ายเดือน_${months[selectedMonth.value]}_${selectedYear.value + 543}.xlsx`)
+        XLSX.writeFile(wb, `income_expenses_${months[selectedMonth.value]}_${selectedYear.value}.xlsx`)
       } catch (error) {
         console.error('Excel Export Error:', error)
         Swal.fire({
           icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถส่งออกรายงานได้'
+          title: 'Error',
+          text: 'Could not export report'
         })
       }
     }
@@ -641,14 +635,12 @@ export default {
       if (expenseChart.value?._chart) expenseChart.value._chart.destroy()
     })
 
-    const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('th-TH')
-    }
+    const formatDate = (date) => formatDateLocal(date)
 
     const getPocketName = (pocketId, type) => {
       const pockets = type === 'income' ? store.getters.incomePockets : store.getters.expensePockets
       const pocket = pockets.find(p => p._id === pocketId)
-      return pocket?.name || 'ไม่ระบุหมวดหมู่'
+      return pocket?.name || 'Uncategorized'
     }
 
     const filteredTransactions = computed(() => {

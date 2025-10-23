@@ -20,16 +20,16 @@ const THEME = {
 }
 
 // Default application timezone for display (server runs in UTC)
-const TimeZone = process.env.APP_TIMEZONE || 'Asia/Bangkok'
+const TimeZone = process.env.APP_TIMEZONE || 'UTC'
 
-function formatThaiDate(date) {
+function formatLocalDate(date) {
   const d = date ? new Date(date) : new Date()
-  return d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', timeZone: TimeZone })
+  return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric', timeZone: TimeZone })
 }
 
-function formatThaiTime(date) {
+function formatLocalTime(date) {
   const d = date ? new Date(date) : new Date()
-  return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: TimeZone })
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: TimeZone })
 }
 
 function formatCurrency(amount) {
@@ -43,7 +43,7 @@ function formatCurrency(amount) {
 function buildHelpMessage() {
   return {
     type: 'text',
-    text: 'พิมพ์จดบันทึกแบบนี้: "กาแฟ 45", "มาม่า100", หรือ "เงินเดือน25000"\nคำสั่ง: help, สรุปวันนี้, ยอดคงเหลือ',
+    text: 'Type to log like: "coffee 45", "noodles 100", or "salary 25000"\nCommands: help, today, balance',
   }
 }
 
@@ -75,10 +75,10 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
     : `${appBase}${editPath}`
   const sign = type === 'income' ? '+' : '-'
   const palette = type === 'income' ? THEME.income : THEME.expense
-  const title = type === 'income' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย'
-  const amountText = `${sign}${formatCurrency(amount)} บาท`
-  const dateText = formatThaiDate()
-  const timeText = formatThaiTime()
+  const title = type === 'income' ? 'Income recorded' : 'Expense recorded'
+  const amountText = `${sign}${formatCurrency(amount)}`
+  const dateText = formatLocalDate()
+  const timeText = formatLocalTime()
 
   return {
     type: 'flex',
@@ -124,7 +124,7 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
                 cornerRadius: '6px',
                 paddingAll: '6px',
                 contents: [
-                  { type: 'text', text: 'หมวด', size: 'xs', color: THEME.subtext },
+                  { type: 'text', text: 'Category', size: 'xs', color: THEME.subtext },
                   { type: 'text', text: `• ${pocketName}`, size: 'xs', color: THEME.text, margin: 'sm' },
                 ],
               },
@@ -137,7 +137,7 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
             cornerRadius: '10px',
             paddingAll: '12px',
             contents: [
-              { type: 'text', text: 'รายละเอียด', size: 'xs', color: THEME.subtext },
+              { type: 'text', text: 'Description', size: 'xs', color: THEME.subtext },
               { type: 'text', text: description, size: 'md', color: THEME.text, wrap: true, margin: 'xs' },
             ],
           },
@@ -145,8 +145,8 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
       },
       footer: {
         type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '12px', contents: [
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'postback', label: 'ยกเลิกรายการ', data: `action=cancel_tx&type=${encodeURIComponent(type)}&tid=${encodeURIComponent(String(transactionId || ''))}` } },
-          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'แก้ไขรายการนี้', uri: openUri } },
+          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'postback', label: 'Cancel', data: `action=cancel_tx&type=${encodeURIComponent(type)}&tid=${encodeURIComponent(String(transactionId || ''))}` } },
+          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'Edit this entry', uri: openUri } },
         ]},
     },
   }
@@ -159,12 +159,12 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
     ? `${appBase}/login-success?token=${encodeURIComponent(opts.token)}&redirect=${encodeURIComponent('/dashboard')}`
     : `${appBase}`
   const balance = totalIncome - totalExpense
-  const dateText = new Date().toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short', timeZone: TimeZone })
-  const headerTitle = title || 'สรุปวันนี้'
+  const dateText = new Date().toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', timeZone: TimeZone })
+  const headerTitle = title || 'Today summary'
   const headerSubtitle = subtitle || dateText
   return {
     type: 'flex',
-    altText: 'สรุปวันนี้',
+    altText: 'Today summary',
     contents: {
       type: 'bubble',
       size: 'mega',
@@ -180,28 +180,28 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
             type: 'box', layout: 'horizontal', spacing: 'md', contents: [
               {
                 type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.softBg, cornerRadius: '10px', paddingAll: '12px', contents: [
-                  { type: 'text', text: 'รายรับ', size: 'xs', color: THEME.subtext },
-                  { type: 'text', text: `+${formatCurrency(totalIncome)} บาท`, size: 'lg', weight: 'bold', color: THEME.income.accent },
+                  { type: 'text', text: 'Income', size: 'xs', color: THEME.subtext },
+                  { type: 'text', text: `+${formatCurrency(totalIncome)}`, size: 'lg', weight: 'bold', color: THEME.income.accent },
                 ]
               },
               {
                 type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.softBg, cornerRadius: '10px', paddingAll: '12px', contents: [
-                  { type: 'text', text: 'รายจ่าย', size: 'xs', color: THEME.subtext },
-                  { type: 'text', text: `-${formatCurrency(totalExpense)} บาท`, size: 'lg', weight: 'bold', color: THEME.expense.accent },
+                  { type: 'text', text: 'Expenses', size: 'xs', color: THEME.subtext },
+                  { type: 'text', text: `-${formatCurrency(totalExpense)}`, size: 'lg', weight: 'bold', color: THEME.expense.accent },
                 ]
               }
             ]
           },
           {
             type: 'box', layout: 'vertical', backgroundColor: THEME.softBg, cornerRadius: '12px', paddingAll: '12px', contents: [
-              { type: 'text', text: 'คงเหลือ', size: 'xs', color: THEME.subtext },
-              { type: 'text', text: `${balance >= 0 ? '+' : ''}${formatCurrency(balance)} บาท`, size: 'xl', weight: 'bold', color: balance >= 0 ? THEME.income.accent : THEME.expense.accent },
+              { type: 'text', text: 'Balance', size: 'xs', color: THEME.subtext },
+              { type: 'text', text: `${balance >= 0 ? '+' : ''}${formatCurrency(balance)}`, size: 'xl', weight: 'bold', color: balance >= 0 ? THEME.income.accent : THEME.expense.accent },
             ]
           },
         ]},
       footer: { type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-        { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการ', text: 'กาแฟ 45' } },
-        { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'เปิดแอพ', uri: openUri } },
+        { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'Add item', text: 'coffee 45' } },
+        { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'Open app', uri: openUri } },
       ]},
     },
   }
@@ -211,10 +211,10 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
 function buildCancelSuccessFlex({ amount, type, pocketName, description, deletedAt } = {}) {
   const sign = type === 'income' ? '+' : '-'
   const palette = THEME.expense
-  const title = 'ยกเลิกรายการ'
-  const amountText = amount != null ? `${sign}${formatCurrency(amount)} บาท` : ''
-  const dateText = formatThaiDate(deletedAt)
-  const timeText = formatThaiTime(deletedAt)
+  const title = 'Transaction cancelled'
+  const amountText = amount != null ? `${sign}${formatCurrency(amount)}` : ''
+  const dateText = formatLocalDate(deletedAt)
+  const timeText = formatLocalTime(deletedAt)
 
   return {
     type: 'flex',
@@ -259,7 +259,7 @@ function buildCancelSuccessFlex({ amount, type, pocketName, description, deleted
                 cornerRadius: '6px',
                 paddingAll: '6px',
                 contents: [
-                  { type: 'text', text: 'หมวด', size: 'xs', color: THEME.subtext },
+                  { type: 'text', text: 'Category', size: 'xs', color: THEME.subtext },
                   { type: 'text', text: `• ${pocketName}`, size: 'xs', color: THEME.text, margin: 'sm' },
                 ],
               },
@@ -272,7 +272,7 @@ function buildCancelSuccessFlex({ amount, type, pocketName, description, deleted
             cornerRadius: '10px',
             paddingAll: '12px',
             contents: [
-              { type: 'text', text: 'รายละเอียด', size: 'xs', color: THEME.subtext },
+              { type: 'text', text: 'Description', size: 'xs', color: THEME.subtext },
               { type: 'text', text: description, size: 'md', color: THEME.text, wrap: true, margin: 'xs' },
             ],
           } : { type: 'filler' },
@@ -307,7 +307,7 @@ function mapChips(pockets, softBg) {
   for (let i = 0; i < items.length; i += 2) {
     rows.push({ type: 'box', layout: 'horizontal', spacing: 'sm', contents: items.slice(i, i + 2) })
   }
-  return rows.length ? rows : [{ type: 'text', text: '— ไม่มีหมวด —', size: 'xs', color: THEME.subtext }]
+  return rows.length ? rows : [{ type: 'text', text: '— No categories —', size: 'xs', color: THEME.subtext }]
 }
 
 function buildPocketsFlex({ incomePockets = [], expensePockets = [] }, opts = {}) {
@@ -317,24 +317,24 @@ function buildPocketsFlex({ incomePockets = [], expensePockets = [] }, opts = {}
     : `${appBase}`
   return {
     type: 'flex',
-    altText: 'หมวดหมู่ของคุณ',
+    altText: 'Your categories',
     contents: {
       type: 'bubble', size: 'mega', styles: { body: { backgroundColor: THEME.cardBg }, footer: { backgroundColor: THEME.cardBg } },
       body: {
         type: 'box', layout: 'vertical', paddingAll: '16px', spacing: 'md', contents: [
-          { type: 'text', text: 'หมวดหมู่ของคุณ', weight: 'bold', size: 'lg', color: THEME.text },
+          { type: 'text', text: 'Your categories', weight: 'bold', size: 'lg', color: THEME.text },
           { type: 'separator' },
-          { type: 'text', text: 'รายรับ', size: 'xs', color: THEME.income.accent },
+          { type: 'text', text: 'Income', size: 'xs', color: THEME.income.accent },
           ...mapChips(incomePockets.slice(0, 8), THEME.income.accentSoft),
           { type: 'separator' },
-          { type: 'text', text: 'รายจ่าย', size: 'xs', color: THEME.expense.accent },
+          { type: 'text', text: 'Expenses', size: 'xs', color: THEME.expense.accent },
           ...mapChips(expensePockets.slice(0, 8), THEME.expense.accentSoft),
         ]
       },
       footer: {
         type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการด่วน', uri: '/quick-add' } },
-          { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'ตั้งค่า Pocket', uri: openUri } },
+          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'Quick add', text: 'coffee 45' } },
+          { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'Configure pockets', uri: openUri } },
         ]
       }
     }
@@ -350,20 +350,20 @@ function buildOnboardingFlex(opts = {}) {
   const onboardingUri = token ? `${appBase}/login-success?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent('/onboarding')}` : `${appBase}/onboarding`
   return {
     type: 'flex',
-    altText: 'เริ่มต้นใช้งาน Cloud Pocket',
+    altText: 'Getting started with Cloud Pocket',
     contents: {
       type: 'bubble', size: 'mega', styles: { body: { backgroundColor: THEME.cardBg }, footer: { backgroundColor: THEME.cardBg } },
       body: {
         type: 'box', layout: 'vertical', paddingAll: '16px', spacing: 'md', contents: [
-          { type: 'text', text: 'ยินดีต้อนรับ 👋', weight: 'bold', size: 'lg', color: THEME.text },
-          { type: 'text', text: 'เริ่มเชื่อมบัญชีและตั้งค่าหมวดหมู่ (Pocket) ก่อนใช้งานบันทึกรายรับรายจ่าย', size: 'sm', color: THEME.subtext, wrap: true },
+          { type: 'text', text: 'Welcome 👋', weight: 'bold', size: 'lg', color: THEME.text },
+          { type: 'text', text: 'Connect your account and set up categories (Pockets) before tracking income and expenses.', size: 'sm', color: THEME.subtext, wrap: true },
         ]
       },
       footer: {
         type: 'box', layout: 'vertical', spacing: 'md', paddingAll: '16px', contents: [
-          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'เปิดแอพ', uri: openAppUri } },
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'uri', label: 'ตั้งค่า Pocket', uri: onboardingUri } },
-          { type: 'text', text: 'หรือพิมพ์ help เพื่อดูวิธีใช้งาน', size: 'xs', color: THEME.subtext, align: 'center' }
+          { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'Open app', uri: openAppUri } },
+          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'uri', label: 'Configure pockets', uri: onboardingUri } },
+          { type: 'text', text: 'Or type help to see how it works', size: 'xs', color: THEME.subtext, align: 'center' }
         ]
       }
     }

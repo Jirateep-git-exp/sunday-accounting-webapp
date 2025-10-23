@@ -3,27 +3,27 @@
     <!-- Header Section -->
     <div class="section-header">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-        <h2 class="mb-0">รายการรายจ่าย</h2>
+  <h2 class="mb-0">Expenses</h2>
         <div class="d-flex align-items-center gap-3">
           <!-- เพิ่มปุ่มลบรายการที่เลือกและปุ่มโหมดเลือก -->
           <button class="btn btn-danger btn-sm" 
                   v-if="isSelectMode && selectedTransactions.length > 0"
                   @click="deleteSelectedTransactions">
             <i class="fa-solid fa-trash me-1"></i>
-            ลบที่เลือก ({{ selectedTransactions.length }})
+            Delete selected ({{ selectedTransactions.length }})
           </button>
           <button class="btn btn-outline-secondary btn-sm" @click="toggleSelectMode">
             <i class="fa-solid" :class="isSelectMode ? 'fa-xmark' : 'fa-check-square'"></i>
-            {{ isSelectMode ? 'ยกเลิก' : 'เลือกหลายรายการ' }}
+            {{ isSelectMode ? 'Cancel' : 'Multi-select' }}
           </button>
           
           <!-- ปุ่มที่มีอยู่เดิม -->
           <div class="filter-section d-flex align-items-center gap-2">
-            <label class="text-nowrap">แสดง:</label>
+            <label class="text-nowrap">Show:</label>
             <select v-model="itemsPerPage" class="form-select form-select-sm">
-              <option value="10">10 รายการ</option>
-              <option value="30">30 รายการ</option>
-              <option value="100">100 รายการ</option>
+              <option value="10">10 items</option>
+              <option value="30">30 items</option>
+              <option value="100">100 items</option>
             </select>
           </div>
           <!-- Removed add transaction button here -->
@@ -45,18 +45,18 @@
           <div class="summary-card mt-4">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">สรุปรายจ่าย</h5>
+                <h5 class="card-title">Expense summary</h5>
                 <div class="summary-item">
-                  <span>วันที่เลือก</span>
-                  <span class="amount">{{ formatAmount(selectedDateTotal) }} ฿</span>
+                  <span>Selected date</span>
+                  <span class="amount">{{ formatAmount(selectedDateTotal) }}</span>
                 </div>
                 <div class="summary-item">
-                  <span>เดือนนี้</span>
-                  <span class="amount">{{ formatAmount(currentMonthTotal) }} ฿</span>
+                  <span>This month</span>
+                  <span class="amount">{{ formatAmount(currentMonthTotal) }}</span>
                 </div>
                 <div class="summary-item">
-                  <span>ทั้งหมด</span>
-                  <span class="amount">{{ formatAmount(totalExpenses) }} ฿</span>
+                  <span>Total</span>
+                  <span class="amount">{{ formatAmount(totalExpenses) }}</span>
                 </div>
               </div>
             </div>
@@ -72,19 +72,19 @@
               <table class="table table-hover mb-0">
                 <thead>
                   <tr>
-                    <th @click="sort('date')" style="cursor: pointer;">วันที่
+                    <th @click="sort('date')" style="cursor: pointer;">Date
                       <i :class="getSortIcon('date')" class="sort-icon"></i>
                     </th>
-                    <th @click="sort('description')" style="cursor: pointer;">รายละเอียด
+                    <th @click="sort('description')" style="cursor: pointer;">Description
                       <i :class="getSortIcon('description')" class="sort-icon"></i>
                     </th>
-                    <th @click="sort('category')" style="cursor: pointer;">หมวดหมู่
+                    <th @click="sort('category')" style="cursor: pointer;">Category
                       <i :class="getSortIcon('category')" class="sort-icon"></i>
                     </th>
-                    <th @click="sort('amount')" class="text-end" style="cursor: pointer;">จำนวน
+                    <th @click="sort('amount')" class="text-end" style="cursor: pointer;">Amount
                       <i :class="getSortIcon('amount')" class="sort-icon"></i>
                     </th>
-                    <th class="text-end">จัดการ</th>
+                    <th class="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -106,7 +106,7 @@
                         {{ getPocketName(entry.pocketId) }}
                       </span>
                     </td>
-                    <td class="text-danger text-end">{{ formatAmount(entry.amount) }} ฿</td>
+                    <td class="text-danger text-end">{{ formatAmount(entry.amount) }}</td>
                     <td class="text-end" v-if="!isSelectMode">
                       <div class="btn-group btn-group-sm">
                         <button class="btn btn-outline-secondary btn-sm" @click="editTransaction(entry)">
@@ -122,7 +122,7 @@
                     <td colspan="5" class="text-center py-4">
                       <div class="empty-state">
                         <i class="bi bi-inbox text-muted"></i>
-                        <p>ไม่พบรายการ</p>
+                        <p>No entries found</p>
                       </div>
                     </td>
                   </tr>
@@ -134,7 +134,7 @@
             <div class="pagination-wrapper p-3 mt-auto border-top"> <!-- เพิ่ม class และ style ใหม่ -->
               <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
                 <div class="text-muted">
-                  แสดง {{ startIndex + 1 }} ถึง {{ endIndex }} จาก {{ filteredExpenses.length }} รายการ
+                  Showing {{ startIndex + 1 }} to {{ endIndex }} of {{ filteredExpenses.length }} entries
                 </div>
                 <nav v-if="totalPages > 1">
                   <ul class="pagination pagination-sm mb-0"> <!-- เพิ่ม mb-0 -->
@@ -168,7 +168,7 @@
   <div v-if="showAddForm" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">แก้ไขรายการรายจ่าย</h5>
+  <h5 class="modal-title">Edit expense</h5>
         <button type="button" class="btn-close" aria-label="Close" @click="closeForm"></button>
       </div>
       <div class="modal-body">
@@ -192,6 +192,7 @@ import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
 import EditTransaction from './shared/EditTransaction.vue'
 import Swal from 'sweetalert2'
+import { formatDateLocal, formatCurrencyLocal } from '../utils/format'
 
 export default {
   components: {
@@ -211,11 +212,7 @@ export default {
       direction: 'desc' // default newest first
     })
 
-    const sortedExpenses = computed(() => {
-      return [...store.state.expenses].sort((a, b) =>
-        new Date(b.date) - new Date(a.date)
-      )
-    })
+    // Removed unused sortedExpenses
 
     const filteredExpenses = computed(() => {
       if (!selectedDate.value) return store.state.expenses
@@ -229,15 +226,7 @@ export default {
       })
     })
 
-    const filteredAndPaginatedExpenses = computed(() => {
-      return sortedExpenses.value
-        .filter(entry => {
-          if (!selectedDate.value) return true
-          const entryDate = new Date(entry.date)
-          return entryDate.toDateString() === selectedDate.value.toDateString()
-        })
-        .slice(startIndex.value, endIndex.value)
-    })
+    // Removed unused filteredAndPaginatedExpenses
 
     const selectedDateTotal = computed(() => {
       return filteredExpenses.value
@@ -257,7 +246,7 @@ export default {
 
     const getPocketName = (pocketId) => {
       const pocket = store.state.pockets.find(p => p._id === pocketId)
-      return pocket?.name || 'ไม่ระบุหมวดหมู่'
+      return pocket?.name || 'Uncategorized'
     }
 
     const totalPages = computed(() => {
@@ -293,35 +282,27 @@ export default {
       }
     }
 
-    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    }
+    const formatDate = (dateString) => formatDateLocal(dateString)
 
-    const formatAmount = (amount) => {
-      return Number(amount).toLocaleString('th-TH')
-    }
+  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
     const deleteTransaction = async (transaction) => {
       const result = await Swal.fire({
-        title: 'ยืนยันการลบรายการ',
-        text: 'คุณแน่ใจหรือไม่ที่จะลบรายการนี้?',
+        title: 'Confirm deletion',
+        text: 'Are you sure you want to delete this item?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'ลบรายการ',
-        cancelButtonText: 'ยกเลิก'
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
       })
 
       if (result.isConfirmed) {
         try {
           await store.dispatch('deleteExpense', transaction._id)
-          Swal.fire('สำเร็จ', 'ลบรายการเรียบร้อยแล้ว', 'success')
+          Swal.fire('Deleted', 'Item has been deleted', 'success')
         } catch (error) {
-          Swal.fire('ผิดพลาด', 'ไม่สามารถลบรายการได้', 'error')
+          Swal.fire('Error', 'Failed to delete item', 'error')
         }
       }
     }
@@ -348,13 +329,13 @@ export default {
 
     const deleteSelectedTransactions = async () => {
       const result = await Swal.fire({
-        title: 'ยืนยันการลบ',
-        text: `ต้องการลบรายการที่เลือกทั้งหมด ${selectedTransactions.value.length} รายการหรือไม่?`,
+        title: 'Delete selected',
+        text: `Delete all selected ${selectedTransactions.value.length} items?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        confirmButtonText: 'ลบ',
-        cancelButtonText: 'ยกเลิก'
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
       })
 
       if (result.isConfirmed) {
@@ -473,10 +454,8 @@ export default {
       changePage,
       formatDate,
       formatAmount,
-      sortedExpenses,
       selectedDate,
       filteredExpenses,
-      filteredAndPaginatedExpenses,
       paginatedData,
       showAddForm,
       handleTransactionAdded,

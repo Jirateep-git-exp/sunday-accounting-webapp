@@ -6,7 +6,7 @@ const Income = require('../models/Income')
 const Expense = require('../models/Expense')
 const User = require('../models/User');
 const { buildHelpMessage, buildConfirmFlex, buildSummaryFlex, buildPocketsFlex, buildOnboardingFlex, buildCancelSuccessFlex, buildTypingMessage, buildTypingImageMessage } = require('./lineMessages')
-const TimeZone = process.env.APP_TIMEZONE || 'Asia/Bangkok'
+const TimeZone = process.env.APP_TIMEZONE || 'UTC'
 const catalog = require('./pocketCatalog')
 const authService = require('../services/authService')
 const mongoose = require('mongoose')
@@ -117,7 +117,7 @@ async function processEvent(event) {
   }
 
   // list pockets
-  if (/^(หมวดหมู่|หมวดหมู่ทั้งหมด|ดูหมวดหมู่|หมวดหมู่ของฉัน)$/.test(text)) {
+  if (/^(หมวดหมู่|หมวดหมู่ทั้งหมด|ดูหมวดหมู่|หมวดหมู่ของฉัน|pockets|categories|my\s*categories)$/i.test(text)) {
     const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
     const typing = createTypingController(event, headers)
 
@@ -137,7 +137,7 @@ async function processEvent(event) {
   }
 
   // handle range summary: "สรุป 7 วัน"
-  const rangeMatch = text.match(/^สรุป\s*(\d+)\s*วัน$/)
+  const rangeMatch = text.match(/^(?:สรุป\s*(\d+)\s*วัน|summary\s*(\d+)\s*days)$/i)
   if (rangeMatch) {
     const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
     const typing = createTypingController(event, headers)
@@ -155,8 +155,8 @@ async function processEvent(event) {
     const totalIncome = incomes.reduce((s, i) => s + (i.amount || 0), 0)
     const totalExpense = expenses.reduce((s, e) => s + (e.amount || 0), 0)
 
-  const fmt = (d) => new Date(d).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', timeZone: TimeZone })
-    const title = `สรุป ${days} วัน`
+  const fmt = (d) => new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', timeZone: TimeZone })
+    const title = `Summary ${days} days`
   const subtitle = `${fmt(startLocal)} - ${fmt(endLocal)}`
   const token = authService.generateToken(user)
   const summaryFlex = buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, { token })
@@ -185,7 +185,7 @@ async function processEvent(event) {
     const totalIncome = incomes.reduce((s, i) => s + (i.amount || 0), 0)
     const totalExpense = expenses.reduce((s, e) => s + (e.amount || 0), 0)
   const token = authService.generateToken(user)
-  const summaryFlex = buildSummaryFlex({ totalIncome, totalExpense, title: 'สรุปวันนี้' }, { token })
+  const summaryFlex = buildSummaryFlex({ totalIncome, totalExpense, title: 'Today summary' }, { token })
     typing.done()
     if (typing.replied()) {
       await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [summaryFlex] }, headers)
@@ -197,7 +197,7 @@ async function processEvent(event) {
 
   // transaction pattern: description + number (space optional) at end, optional 'บาท'
   // supports: "ข้าวมันไก่ 55", "มาม่า100", "กาแฟ-45", "โบนัส+1000"
-  const match = text.match(/^(.+?)(?:\s*|\s*[-+]?)(-?\d+)(?:\s*บาท)?$/i)
+  const match = text.match(/^(.+?)(?:\s*|\s*[-+]?)(-?\d+)(?:\s*(?:บาท|baht))?$/i)
   if (match) {
   const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
   const typing = createTypingController(event, headers)
@@ -252,7 +252,7 @@ async function processEvent(event) {
     }
 
     if (!pocket) {
-      const msg = { type: 'text', text: `ไม่พบหมวด "${pocketInfo.name}" กรุณาสร้างหมวดนี้ก่อนใน Cloud Pocket หรือใส่ชื่อหมวดในข้อความ เช่น "ชื่อหมวด 100"` }
+      const msg = { type: 'text', text: `Category "${pocketInfo.name}" not found. Please create it in Cloud Pocket first, or include a category in the message, e.g. "CategoryName 100"` }
       typing.done()
       if (typing.replied()) {
         await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [msg] }, headers)
@@ -282,7 +282,7 @@ async function processEvent(event) {
   }
 
   // invalid format -> guide
-  await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [{ type: 'text', text: 'พิมพ์บันทึกแบบ: "ข้าวมันไก่ 55" หรือพิมพ์ "help" เพื่อดูวิธีใช้งาน' }] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+  await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [{ type: 'text', text: 'Type like: "coffee 45" or "help" to see usage' }] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
 }
 
 // Process a batch of events (used by Express and Serverless)

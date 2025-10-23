@@ -1,15 +1,15 @@
 <template>
   <div class="multiple-transaction-form">
     <div class="form-header">
-      <h2 class="text-center">เพิ่มรายการหลายรายการพร้อมกัน</h2>
-      <p class="subtitle">เพิ่มรายการรายรับหรือรายจ่ายหลายรายการในครั้งเดียว</p>
+      <h2 class="text-center">Add Multiple Transactions</h2>
+      <p class="subtitle">Add multiple income or expense entries in one go</p>
     </div>
 
     <!-- Transaction Type Selection -->
     <div class="mb-4">
       <label class="form-label">
         <i class="fa-solid fa-tag me-2"></i>
-        ประเภทของรายการ
+        Transaction Type
       </label>
       <div class="transaction-type-buttons">
         <button 
@@ -19,7 +19,7 @@
           @click="toggleTransactionType('income')"
         >
           <i class="fa-solid fa-plus-circle me-2"></i>
-          รายรับ
+          Income
         </button>
         <button 
           type="button" 
@@ -28,10 +28,10 @@
           @click="toggleTransactionType('expense')"
         >
           <i class="fa-solid fa-minus-circle me-2"></i>
-          รายจ่าย
+          Expense
         </button>
       </div>
-      <p class="type-hint">เลือกประเภทรายการที่ต้องการเพิ่ม (สามารถเลือกได้ทั้งสองประเภท)</p>
+      <p class="type-hint">Choose the types you want to add (you can select both)</p>
     </div>
 
     <!-- Transaction Items -->
@@ -41,7 +41,7 @@
         <div class="section-header">
           <h4>
             <i class="fa-solid fa-plus-circle me-2 text-success"></i>
-            รายการรายรับ ({{ incomeTransactions.length }} รายการ)
+            Income Items ({{ incomeTransactions.length }})
           </h4>
           <button 
             type="button" 
@@ -49,7 +49,7 @@
             @click="addTransaction('income')"
           >
             <i class="fa-solid fa-plus me-2"></i>
-            เพิ่มรายรับ
+            Add Income
           </button>
         </div>
 
@@ -62,7 +62,7 @@
           >
             <div class="item-header">
               <span class="item-number income-number">{{ index + 1 }}</span>
-              <span class="transaction-type-badge income-badge">รายรับ</span>
+              <span class="transaction-type-badge income-badge">Income</span>
               <button 
                 type="button" 
                 class="btn btn-outline-danger btn-sm delete-btn"
@@ -78,7 +78,7 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-calendar-days me-2"></i>
-                  วันที่
+                  Date
                 </label>
                 <div class="date-picker-wrapper">
                   <div class="enhanced-date-picker" @click="toggleDatePicker(transaction.id)">
@@ -88,7 +88,7 @@
                       </div>
                       <div class="date-text">
                         <div class="selected-date">{{ formatDisplayDate(transaction.date) }}</div>
-                        <div class="date-subtitle">คลิกเพื่อเปลี่ยนแปลง</div>
+                        <div class="date-subtitle">Click to change</div>
                       </div>
                     </div>
                     <i class="fa-solid fa-chevron-down dropdown-arrow" :class="{ 'rotated': showDatePicker === transaction.id }"></i>
@@ -112,8 +112,8 @@
                           <i class="fa-solid fa-chevron-left"></i>
                         </button>
                         <div class="period-display">
-                          <div class="month-name">{{ thaiMonths[currentMonth] }}</div>
-                          <div class="year-name">{{ currentYear + 543 }}</div>
+                          <div class="month-name">{{ monthNames[currentMonth] }}</div>
+                          <div class="year-name">{{ currentYear }}</div>
                         </div>
                         <button type="button" class="nav-button" @click="nextMonth">
                           <i class="fa-solid fa-chevron-right"></i>
@@ -148,11 +148,11 @@
                       <div class="calendar-footer">
                         <button type="button" class="quick-action-btn today-btn" @click="selectToday(transaction.id)">
                           <i class="fa-solid fa-calendar-day me-2"></i>
-                          วันนี้
+                          Today
                         </button>
                         <button type="button" class="quick-action-btn yesterday-btn" @click="selectYesterday(transaction.id)">
                           <i class="fa-solid fa-calendar-minus me-2"></i>
-                          เมื่อวาน
+                          Yesterday
                         </button>
                       </div>
                     </div>
@@ -164,10 +164,10 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-layer-group me-2"></i>
-                  หมวดหมู่
+                  Category
                 </label>
                 <select v-model="transaction.pocketId" class="form-select" required>
-                  <option value="" disabled>เลือกหมวดหมู่</option>
+                  <option value="" disabled>Select category</option>
                   <option v-for="pocket in incomePockets" :key="pocket._id" :value="pocket._id">
                     {{ pocket.name }}
                   </option>
@@ -178,7 +178,7 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-coins me-2"></i>
-                  จำนวนเงิน
+                  Amount
                 </label>
                 <input 
                   type="number" 
@@ -195,13 +195,13 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-note-sticky me-2"></i>
-                  บันทึกช่วยจำ
+                  Notes
                 </label>
                 <input 
                   type="text" 
                   v-model="transaction.description" 
                   class="form-control" 
-                  placeholder="รายละเอียดของรายการ"
+                  placeholder="Transaction details"
                   required
                 />
               </div>
@@ -215,7 +215,7 @@
         <div class="section-header">
           <h4>
             <i class="fa-solid fa-minus-circle me-2 text-danger"></i>
-            รายการรายจ่าย ({{ expenseTransactions.length }} รายการ)
+            Expense Items ({{ expenseTransactions.length }})
           </h4>
           <button 
             type="button" 
@@ -223,7 +223,7 @@
             @click="addTransaction('expense')"
           >
             <i class="fa-solid fa-plus me-2"></i>
-            เพิ่มรายจ่าย
+            Add Expense
           </button>
         </div>
 
@@ -236,7 +236,7 @@
           >
             <div class="item-header">
               <span class="item-number expense-number">{{ index + 1 }}</span>
-              <span class="transaction-type-badge expense-badge">รายจ่าย</span>
+              <span class="transaction-type-badge expense-badge">Expense</span>
               <button 
                 type="button" 
                 class="btn btn-outline-danger btn-sm delete-btn"
@@ -252,7 +252,7 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-calendar-days me-2"></i>
-                  วันที่
+                  Date
                 </label>
                 <div class="date-picker-wrapper">
                   <div class="enhanced-date-picker" @click="toggleDatePicker(transaction.id)">
@@ -262,7 +262,7 @@
                       </div>
                       <div class="date-text">
                         <div class="selected-date">{{ formatDisplayDate(transaction.date) }}</div>
-                        <div class="date-subtitle">คลิกเพื่อเปลี่ยนแปลง</div>
+                        <div class="date-subtitle">Click to change</div>
                       </div>
                     </div>
                     <i class="fa-solid fa-chevron-down dropdown-arrow" :class="{ 'rotated': showDatePicker === transaction.id }"></i>
@@ -286,8 +286,8 @@
                           <i class="fa-solid fa-chevron-left"></i>
                         </button>
                         <div class="period-display">
-                          <div class="month-name">{{ thaiMonths[currentMonth] }}</div>
-                          <div class="year-name">{{ currentYear + 543 }}</div>
+                          <div class="month-name">{{ monthNames[currentMonth] }}</div>
+                          <div class="year-name">{{ currentYear }}</div>
                         </div>
                         <button type="button" class="nav-button" @click="nextMonth">
                           <i class="fa-solid fa-chevron-right"></i>
@@ -322,11 +322,11 @@
                       <div class="calendar-footer">
                         <button type="button" class="quick-action-btn today-btn" @click="selectToday(transaction.id)">
                           <i class="fa-solid fa-calendar-day me-2"></i>
-                          วันนี้
+                          Today
                         </button>
                         <button type="button" class="quick-action-btn yesterday-btn" @click="selectYesterday(transaction.id)">
                           <i class="fa-solid fa-calendar-minus me-2"></i>
-                          เมื่อวาน
+                          Yesterday
                         </button>
                       </div>
                     </div>
@@ -338,10 +338,10 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-layer-group me-2"></i>
-                  หมวดหมู่
+                  Category
                 </label>
                 <select v-model="transaction.pocketId" class="form-select" required>
-                  <option value="" disabled>เลือกหมวดหมู่</option>
+                  <option value="" disabled>Select category</option>
                   <option v-for="pocket in expensePockets" :key="pocket._id" :value="pocket._id">
                     {{ pocket.name }}
                   </option>
@@ -352,7 +352,7 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-coins me-2"></i>
-                  จำนวนเงิน
+                  Amount
                 </label>
                 <input 
                   type="number" 
@@ -369,13 +369,13 @@
               <div class="col-md-6">
                 <label class="form-label">
                   <i class="fa-solid fa-note-sticky me-2"></i>
-                  บันทึกช่วยจำ
+                  Notes
                 </label>
                 <input 
                   type="text" 
                   v-model="transaction.description" 
                   class="form-control" 
-                  placeholder="รายละเอียดของรายการ"
+                  placeholder="Transaction details"
                   required
                 />
               </div>
@@ -390,32 +390,32 @@
       <div class="summary-card">
         <h5>
           <i class="fa-solid fa-calculator me-2"></i>
-          สรุปรายการ
+          Summary
         </h5>
         <div class="summary-details">
           <div v-if="selectedTypes.includes('income')" class="summary-item">
-            <span class="label">รายรับ:</span>
+            <span class="label">Income:</span>
             <span class="value text-success">
-              {{ validIncomeTransactions.length }} รายการ | {{ formatCurrency(totalIncomeAmount) }} บาท
+              {{ validIncomeTransactions.length }} items | {{ formatCurrencyLocal(totalIncomeAmount, 'USD') }}
             </span>
           </div>
           <div v-if="selectedTypes.includes('expense')" class="summary-item">
-            <span class="label">รายจ่าย:</span>
+            <span class="label">Expense:</span>
             <span class="value text-danger">
-              {{ validExpenseTransactions.length }} รายการ | {{ formatCurrency(totalExpenseAmount) }} บาท
+              {{ validExpenseTransactions.length }} items | {{ formatCurrencyLocal(totalExpenseAmount, 'USD') }}
             </span>
           </div>
           <div class="summary-item summary-total">
-            <span class="label">รวมทั้งหมด:</span>
+            <span class="label">Total:</span>
             <span class="value total-amount">
-              {{ validTransactions.length }} รายการ | {{ formatCurrency(netAmount) }} บาท
+              {{ validTransactions.length }} items | {{ formatCurrencyLocal(netAmount, 'USD') }}
             </span>
           </div>
           <div v-if="netAmount !== 0" class="net-result">
-            <span class="net-label">ผลต่าง:</span>
+            <span class="net-label">Net:</span>
             <span class="net-value" :class="netAmount > 0 ? 'text-success' : 'text-danger'">
-              {{ netAmount > 0 ? '+' : '' }}{{ formatCurrency(netAmount) }} บาท
-              ({{ netAmount > 0 ? 'กำไร' : 'ขาดทุน' }})
+              {{ netAmount > 0 ? '+' : '' }}{{ formatCurrencyLocal(netAmount, 'USD') }}
+              ({{ netAmount > 0 ? 'Profit' : 'Loss' }})
             </span>
           </div>
         </div>
@@ -431,7 +431,7 @@
         :disabled="!canSubmit"
       >
         <i class="fa-solid fa-save me-2"></i>
-        บันทึกทั้งหมด ({{ validTransactions.length }} รายการ)
+        Save All ({{ validTransactions.length }} items)
       </button>
     </div>
   </div>
@@ -441,6 +441,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import Swal from 'sweetalert2'
+import { formatDateLocal, formatCurrencyLocal } from '@/utils/format'
 
 export default {
   props: {
@@ -463,15 +464,15 @@ export default {
     const showDatePicker = ref(null) // Track which transaction's datepicker is open
     const currentMonth = ref(new Date().getMonth())
     const currentYear = ref(new Date().getFullYear())
-
-    // Thai month names
-    const thaiMonths = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
-
-    const weekDays = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+    
+    // Localized month and weekday names
+    const monthNames = Array.from({ length: 12 }, (_, i) =>
+      new Date(2000, i, 1).toLocaleDateString(undefined, { month: 'long' })
+    )
+    // Start from a known Sunday (Aug 1, 2021)
+    const weekDays = Array.from({ length: 7 }, (_, i) =>
+      new Date(Date.UTC(2021, 7, 1 + i)).toLocaleDateString(undefined, { weekday: 'short' })
+    )
 
     // Computed properties
     const incomePockets = computed(() => store.getters.incomePockets)
@@ -548,22 +549,10 @@ export default {
     }
 
     const formatDisplayDate = (dateString) => {
-      if (!dateString) return 'เลือกวันที่'
+      if (!dateString) return 'Select a date'
       const date = new Date(dateString)
-      if (isNaN(date.getTime())) return 'เลือกวันที่'
-      
-      const day = date.getDate()
-      const month = thaiMonths[date.getMonth()]
-      const year = date.getFullYear() + 543
-      
-      return `${day} ${month} ${year}`
-    }
-
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(amount)
+      if (isNaN(date.getTime())) return 'Select a date'
+      return formatDateLocal(date, { year: 'numeric', month: 'long', day: 'numeric' })
     }
 
     const createEmptyTransaction = (type) => ({
@@ -651,11 +640,11 @@ export default {
         const calendarRect = calendarEl.getBoundingClientRect()
         const viewportWidth = window.innerWidth
 
-        // รีเซ็ต positioning
+        // Reset positioning
         calendarEl.style.left = '0'
         calendarEl.style.right = 'auto'
 
-        // ตรวจสอบว่าเกินขอบขวาหรือไม่
+        // Check overflow right edge
         if (pickerRect.left + calendarRect.width > viewportWidth - 20) {
           calendarEl.style.left = 'auto'
           calendarEl.style.right = '0'
@@ -671,7 +660,7 @@ export default {
     }
 
     const selectDate = (date, transactionId) => {
-      if (date > new Date()) return // Don't allow future dates
+  if (date > new Date()) return // Don't allow future dates
       
       const selected = new Date(date.getFullYear(), date.getMonth(), date.getDate())
       selected.setHours(12, 0, 0, 0)
@@ -762,24 +751,24 @@ export default {
     const submitTransactions = async () => {
       try {
         if (!canSubmit.value) {
-          throw new Error('กรุณากรอกข้อมูลให้ครบถ้วนในทุกรายการ')
+          throw new Error('Please complete all fields for each item')
         }
 
-        let confirmText = 'คุณต้องการบันทึกรายการต่อไปนี้ หรือไม่?\n'
+        let confirmText = 'Do you want to save the following items?\n'
         if (validIncomeTransactions.value.length > 0) {
-          confirmText += `รายรับ: ${validIncomeTransactions.value.length} รายการ\n`
+          confirmText += `Income: ${validIncomeTransactions.value.length} items\n`
         }
         if (validExpenseTransactions.value.length > 0) {
-          confirmText += `รายจ่าย: ${validExpenseTransactions.value.length} รายการ\n`
+          confirmText += `Expense: ${validExpenseTransactions.value.length} items\n`
         }
 
         const result = await Swal.fire({
-          title: 'ยืนยันการบันทึก',
+          title: 'Confirm Save',
           text: confirmText,
           icon: 'question',
           showCancelButton: true,
-          confirmButtonText: 'บันทึก',
-          cancelButtonText: 'ยกเลิก',
+          confirmButtonText: 'Save',
+          cancelButtonText: 'Cancel',
           confirmButtonColor: '#6c5ce7',
           cancelButtonColor: '#74b9ff'
         })
@@ -812,9 +801,9 @@ export default {
 
         await Swal.fire({
           icon: 'success',
-          title: 'บันทึกสำเร็จ',
-          text: `เพิ่มรายการทั้งหมด ${validTransactions.value.length} รายการ เรียบร้อยแล้ว`,
-          confirmButtonText: 'ตกลง',
+          title: 'Saved',
+          text: `Added ${validTransactions.value.length} items successfully`,
+          confirmButtonText: 'OK',
           confirmButtonColor: '#6c5ce7',
           timer: 2000,
           timerProgressBar: true
@@ -830,9 +819,9 @@ export default {
         console.error('Error submitting multiple transactions:', error)
         Swal.fire({
           icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: error.message || 'ไม่สามารถบันทึกรายการได้ กรุณาลองใหม่อีกครั้ง',
-          confirmButtonText: 'ตกลง',
+          title: 'An error occurred',
+          text: error.message || 'Failed to save items. Please try again.',
+          confirmButtonText: 'OK',
           confirmButtonColor: '#6c5ce7'
         })
       }
@@ -897,7 +886,7 @@ export default {
       showDatePicker,
       currentMonth,
       currentYear,
-      thaiMonths,
+      monthNames,
       weekDays,
       
       // Computed
@@ -914,7 +903,7 @@ export default {
       calendarDays,
       
       // Methods
-      formatCurrency,
+      formatCurrencyLocal,
       formatDisplayDate,
       toggleTransactionType,
       addTransaction,

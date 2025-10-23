@@ -1,38 +1,38 @@
 <template>
   <div class="edit-transaction">
     <h2 v-if="!modal" class="page-title">
-      {{ isIncome ? 'แก้ไขรายการรายรับ' : 'แก้ไขรายการรายจ่าย' }}
+      {{ isIncome ? 'Edit Income' : 'Edit Expense' }}
     </h2>
 
-    <div v-if="loading" class="loading">กำลังโหลด...</div>
-    <div v-else-if="!form" class="error">ไม่พบรายการ</div>
+    <div v-if="loading" class="loading">Loading...</div>
+    <div v-else-if="!form" class="error">Transaction not found</div>
     <form v-else @submit.prevent="onSubmit" class="form">
       <div class="form-group">
-        <label>วันที่</label>
+        <label>Date</label>
         <input type="date" v-model="form.date" required />
       </div>
       <div class="form-group">
-        <label>หมวดหมู่</label>
+        <label>Category</label>
         <select v-model="form.pocketId" required>
-          <option value="" disabled>เลือกหมวดหมู่</option>
+          <option value="" disabled>Select category</option>
           <option v-for="p in pockets" :key="p._id" :value="p._id">
             {{ p.name }}
           </option>
         </select>
       </div>
       <div class="form-group">
-        <label>จำนวนเงิน (บาท)</label>
+        <label>Amount</label>
         <input type="number" v-model.number="form.amount" min="0" step="0.01" required />
       </div>
       <div class="form-group">
-        <label>รายละเอียด</label>
+        <label>Notes</label>
         <input type="text" v-model="form.description" required />
       </div>
 
       <div class="actions">
-        <button type="submit" class="btn btn-primary">บันทึกการแก้ไข</button>
-        <button type="button" class="btn btn-danger" @click="onDelete">ลบรายการนี้</button>
-        <button type="button" class="btn" @click="goBack">ยกเลิก</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="button" class="btn btn-danger" @click="onDelete">Delete</button>
+        <button type="button" class="btn" @click="goBack">Cancel</button>
       </div>
     </form>
   </div>
@@ -122,12 +122,12 @@ export default {
         }
       } catch (e) {
         console.error('Update failed', e)
-        alert('บันทึกไม่สำเร็จ กรุณาลองใหม่')
+        alert('Failed to save. Please try again.')
       }
     }
 
     const onDelete = async () => {
-      if (!confirm('ยืนยันการลบรายการนี้?')) return
+      if (!confirm('Are you sure you want to delete this transaction?')) return
       try {
         if (isIncome.value) {
           await store.dispatch('deleteIncome', id.value)
@@ -140,7 +140,7 @@ export default {
         }
       } catch (e) {
         console.error('Delete failed', e)
-        alert('ลบไม่สำเร็จ กรุณาลองใหม่')
+        alert('Failed to delete. Please try again.')
       }
     }
 

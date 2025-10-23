@@ -15,8 +15,8 @@
               <i class="bi bi-graph-up-arrow"></i>
             </div>
             <div class="card-info">
-              <h3>รายรับทั้งหมด</h3>
-              <h2>{{ formatAmount(filteredTotalIncome) }} ฿</h2>
+              <h3>Total income</h3>
+              <h2>{{ formatAmount(filteredTotalIncome) }}</h2>
             </div>
           </div>
         </div>
@@ -29,8 +29,8 @@
               <i class="bi bi-graph-down-arrow"></i>
             </div>
             <div class="card-info">
-              <h3>รายจ่ายทั้งหมด</h3>
-              <h2>{{ formatAmount(filteredTotalExpenses) }} ฿</h2>
+              <h3>Total expenses</h3>
+              <h2>{{ formatAmount(filteredTotalExpenses) }}</h2>
             </div>
           </div>
         </div>
@@ -43,8 +43,8 @@
               <i class="bi bi-wallet2"></i>
             </div>
             <div class="card-info">
-              <h3>เงินคงเหลือ</h3>
-              <h2>{{ formatAmount(filteredBalance) }} ฿</h2>
+              <h3>Balance</h3>
+              <h2>{{ formatAmount(filteredBalance) }}</h2>
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@
             <router-link to="/transaction">
               <button class="btn button-outline w-100">
                 <i class="fa-solid fa-layer-group me-2"></i>
-                เพิ่มหลายรายการ
+                Add multiple
               </button>
             </router-link>
           </div>
@@ -79,13 +79,13 @@
         <div class="card h-100">
           <div class="card-body">
             <div class="transactions-header">
-              <h3>รายการล่าสุด</h3>
+              <h3>Recent transactions</h3>
               <div class="tabs">
                 <button :class="['tab-btn', { active: activeTab === 'income' }]" @click="activeTab = 'income'">
-                  รายรับ
+                  Income
                 </button>
                 <button :class="['tab-btn', { active: activeTab === 'expenses' }]" @click="activeTab = 'expenses'">
-                  รายจ่าย
+                  Expenses
                 </button>
               </div>
             </div>
@@ -97,7 +97,7 @@
                     <span class="description">{{ entry.description }}</span>
                     <span class="date">{{ formatDate(entry.date) }}</span>
                   </div>
-                  <span class="amount income">+{{ entry.amount }} ฿</span>
+                  <span class="amount income">+{{ formatAmount(entry.amount) }}</span>
                 </div>
                 <hr v-if="idx < recentIncome.length - 1" class="transaction-divider" />
               </template>
@@ -110,7 +110,7 @@
                     <span class="description">{{ entry.description }}</span>
                     <span class="date">{{ formatDate(entry.date) }}</span>
                   </div>
-                  <span class="amount expenses">-{{ entry.amount }} ฿</span>
+                  <span class="amount expenses">-{{ formatAmount(entry.amount) }}</span>
                 </div>
                 <hr v-if="idx < recentExpenses.length - 1" class="transaction-divider" />
               </template>
@@ -126,20 +126,18 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
-import MultipleTransactionForm from './shared/MultipleTransactionForm.vue'
 import Swal from 'sweetalert2'
+import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'Dashboard',
   components: {
-    Calendar,
-    MultipleTransactionForm
+  Calendar
   },
   setup() {
     const store = useStore()
     const selectedDate = ref(new Date())
-    const activeTab = ref('income')
-    const selectedPocket = ref(null)
+  const activeTab = ref('income')
     // const showMultipleModal = ref(false)
 
     const isInSelectedMonth = (date) => {
@@ -183,14 +181,9 @@ export default {
         .slice(0, 5)
     })
 
-    const formatAmount = (amount) => {
-      return Number(amount).toLocaleString('th-TH')
-    }
+  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
-    const formatDate = (date) => {
-      if (!date) return ''
-      return new Date(date).toLocaleDateString('th-TH')
-    }
+    const formatDate = (date) => formatDateLocal(date)
 
     // Random Greetings Array
     const greetings = [
@@ -226,14 +219,14 @@ export default {
       // First notification for category reminder
       if (!localStorage.getItem('suppressCategoryReminder')) {
         await Swal.fire({
-          title: 'เริ่มต้นใช้งาน',
-          text: 'อย่าลืมสร้างหมวดหมู่รายรับ-รายจ่ายก่อนเริ่มใช้งานนะคะ',
+          title: 'Getting started',
+          text: 'Don\'t forget to create income/expense categories before you start.',
           icon: 'info',
-          confirmButtonText: 'ตกลง',
+          confirmButtonText: 'OK',
           confirmButtonColor: '#6c5ce7',
           showCancelButton: true,
-          cancelButtonText: 'ไม่ต้องเตือนอีก',
-          footer: '<a href="/cloudpocket">ไปที่หน้าหมวดหมู่</a>'
+          cancelButtonText: 'Don\'t remind me again',
+          footer: '<a href="/cloudpocket">Go to categories</a>'
         }).then((result) => {
           if (result.dismiss === Swal.DismissReason.cancel) {
             localStorage.setItem('suppressCategoryReminder', 'true')
@@ -256,7 +249,6 @@ export default {
       formatDate,
       greeting,
       currentDay,
-      selectedPocket,
       formatAmount
     }
   }

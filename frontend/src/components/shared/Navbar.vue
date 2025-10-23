@@ -21,27 +21,27 @@
       <div v-if="isAuthenticated" :class="['nav-links', { 'show': isMenuOpen || !isMobile }]">
         <router-link to="/dashboard" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-home"></i>
-          <span class="nav-label">หน้าหลัก</span>
+          <span class="nav-label">Home</span>
         </router-link>
 
         <router-link to="/transaction" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-circle"></i>
-          <span class="nav-label">เพิ่มรายการ</span>
+          <span class="nav-label">Add transaction</span>
         </router-link>
         
         <router-link to="/income" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-plus-circle"></i>
-          <span class="nav-label">รายรับ</span>
+          <span class="nav-label">Income</span>
         </router-link>
 
         <router-link to="/expenses" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-minus-circle"></i>
-          <span class="nav-label">รายจ่าย</span>
+          <span class="nav-label">Expenses</span>
         </router-link>
 
         <router-link to="/analyze" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-chart-line"></i>
-          <span class="nav-label">วิเคราะห์</span>
+          <span class="nav-label">Analytics</span>
         </router-link>
 
         <router-link to="/cloudpocket" class="nav-item" active-class="active" @click="isMenuOpen = false">
@@ -51,24 +51,24 @@
 
         <router-link to="/settings" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-cog"></i>
-          <span class="nav-label">ตั้งค่า</span>
+          <span class="nav-label">Settings</span>
         </router-link>
 
         <div class="nav-item" @click="handleLogout">
           <i class="nav-icon fas fa-sign-out-alt"></i>
-          <span class="nav-label">ออกจากระบบ</span>
+          <span class="nav-label">Logout</span>
         </div>
       </div>
 
       <div v-else :class="['nav-links', { 'show': isMenuOpen || !isMobile }]">
         <router-link to="/login" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-sign-in-alt"></i>
-          <span class="nav-label">เข้าสู่ระบบ</span>
+          <span class="nav-label">Login</span>
         </router-link>
 
         <router-link to="/register" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-user-plus"></i>
-          <span class="nav-label">สมัครสมาชิก</span>
+          <span class="nav-label">Register</span>
         </router-link>
       </div>
     </div>
@@ -96,11 +96,11 @@ export default {
     const isMenuOpen = ref(false)
 
     const menuItems = [
-      { path: '/', label: 'หน้าหลัก', icon: 'bi bi-house' },
-      { path: '/income', label: 'รายรับ', icon: 'bi bi-graph-up-arrow' },
-      { path: '/expenses', label: 'รายจ่าย', icon: 'bi bi-graph-down-arrow' },
+      { path: '/', label: 'Home', icon: 'bi bi-house' },
+      { path: '/income', label: 'Income', icon: 'bi bi-graph-up-arrow' },
+      { path: '/expenses', label: 'Expenses', icon: 'bi bi-graph-down-arrow' },
       { path: '/cloudpocket', label: 'Category', icon: 'bi bi-folder' },
-      { path: '/analyze', label: 'วิเคราะห์', icon: 'bi bi-bar-chart' }
+      { path: '/analyze', label: 'Analytics', icon: 'bi bi-bar-chart' }
     ]
 
     const isAuthenticated = computed(() => store.getters.isAuthenticated)
