@@ -16,7 +16,7 @@
             </div>
             <div class="card-info">
               <h3>รายรับทั้งหมด</h3>
-              <h2>{{ filteredTotalIncome }} ฿</h2>
+              <h2>{{ formatAmount(filteredTotalIncome) }} ฿</h2>
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
             </div>
             <div class="card-info">
               <h3>รายจ่ายทั้งหมด</h3>
-              <h2>{{ filteredTotalExpenses }} ฿</h2>
+              <h2>{{ formatAmount(filteredTotalExpenses) }} ฿</h2>
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@
             </div>
             <div class="card-info">
               <h3>เงินคงเหลือ</h3>
-              <h2>{{ filteredBalance }} ฿</h2>
+              <h2>{{ formatAmount(filteredBalance) }} ฿</h2>
             </div>
           </div>
         </div>
@@ -183,32 +183,8 @@ export default {
         .slice(0, 5)
     })
 
-    const handleTransaction = async (transaction) => {
-      try {
-
-        const newTransaction = {
-          amount: Number(transaction.amount),
-          description: transaction.description,
-          date: transaction.date || new Date().toISOString(),
-          pocketId: selectedPocket.value?._id // Using MongoDB _id (safe optional chaining)
-        }
-
-        // Using store actions that connect to MongoDB
-        if (transaction.type === 'income') {
-          await store.dispatch('addIncome', newTransaction)
-        } else {
-          await store.dispatch('addExpense', newTransaction)
-        }
-
-        // Show success message
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: 'Transaction added successfully'
-        })
-      } catch (error) {
-        console.error('Error adding transaction:', error)
-      }
+    const formatAmount = (amount) => {
+      return Number(amount).toLocaleString('th-TH')
     }
 
     const formatDate = (date) => {
@@ -281,8 +257,7 @@ export default {
       greeting,
       currentDay,
       selectedPocket,
-      // showMultipleModal,
-      // onMultipleTransactionsAdded
+      formatAmount
     }
   }
 }

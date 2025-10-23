@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import store from '../../../frontend/src/store'
+import store from '../store'
 import Dashboard from '../components/Dashboard.vue'
 import Transaction from '../components/shared/MultipleTransactionForm.vue'
 import Income from '../components/Income.vue'
@@ -79,6 +79,10 @@ const routes = [
     component: OnboardingIntro
   },
   {
+    path: '/onboarding-intro',
+    redirect: { name: 'OnboardingIntro' }
+  },
+  {
     path: '/connect-line',
     name: 'ConnectLine',
     component: ConnectLine
@@ -101,12 +105,7 @@ const routes = [
     component: Settings,
     meta: { requiresAuth: true }
   },
-  {
-    path: '/quick-add',
-    name: 'QuickAdd',
-    component: QuickAdd,
-    meta: { requiresAuth: true }
-  }
+  
 ]
 
 const router = createRouter({

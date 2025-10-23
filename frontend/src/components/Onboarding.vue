@@ -91,8 +91,10 @@ export default {
   const payload = chosen.map(p => ({ type: p.type, name: p.name }))
         const { data } = await axios.post(`${this.api}/pockets/bulk`, { pockets: payload }, { headers: { Authorization: `Bearer ${token}` } })
         this.msg = `สร้าง ${data.length} หมวดสำเร็จ`
-        // redirect to dashboard after success
-        this.$router.push({ name: 'Dashboard' })
+        // redirect to dashboard after success (skip redirect in debug mode)
+        if (this.$route.query.debug !== '1') {
+          this.$router.push({ name: 'Dashboard' })
+        }
       } catch (e) { this.msg = e.response?.data?.error || 'สร้างไม่สำเร็จ' }
       finally { this.loading = false }
     }
@@ -106,22 +108,27 @@ export default {
 </script>
 
 <style scoped>
-.onboard { padding: 16px }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px }
-.card { border: 1px solid #ccc; padding: 12px; border-radius: 8px; cursor: pointer }
-.card.selected { border-color: #4F46E5; box-shadow: 0 0 0 2px rgba(79,70,229,0.2) }
-.name { font-weight: 600 }
-.type { font-size: 12px; color: #666; margin-bottom: 8px }
-.rename { width: 100%; padding: 6px }
-.actions { margin-top: 12px }
-.primary { background: #4F46E5; color: white; border: none; padding: 10px 16px; border-radius: 6px; }
+.onboard { padding: 24px; max-width: 980px; margin: 0 auto }
+.onboard h2 { font-size: 28px; margin: 0 0 6px; font-weight: 800; letter-spacing: .2px }
+.hint { color: #6b7280; margin-bottom: 16px }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px }
+.card { border: 1px solid #e5e7eb; padding: 14px; border-radius: 12px; cursor: pointer; background: #fff; transition: box-shadow .15s ease, transform .08s ease }
+.card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.06); transform: translateY(-1px) }
+.card.selected { border-color: #4F46E5; box-shadow: 0 0 0 2px rgba(79,70,229,0.25), 0 10px 24px rgba(79,70,229,0.12) }
+.name { font-weight: 700; margin-bottom: 2px }
+.type { font-size: 12px; color: #6b7280; margin-bottom: 8px }
+.rename { width: 100%; padding: 8px }
+.actions { margin-top: 16px }
+.actions .count { color: #6b7280; margin-bottom: 8px }
+.primary { background: linear-gradient(135deg,#4F46E5,#6366F1); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600 }
 /* Custom modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000 }
-.modal { background: #fff; padding: 16px; border-radius: 8px; width: 90%; max-width: 420px }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000 }
+.modal { background: #fff; padding: 18px; border-radius: 12px; width: 92%; max-width: 460px; box-shadow: 0 12px 32px rgba(0,0,0,0.15) }
 .modal h3 { margin-top: 0 }
-.modal .row { display: flex; gap: 8px; margin-top: 8px }
-.modal input { flex: 1; padding: 8px }
-.modal .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px }
-.card.add { display: flex; align-items: center; gap: 8px; justify-content: center; color: #4F46E5; border-style: dashed }
-.card .icon { font-size: 20px; margin-bottom: 6px }
+.modal .row { display: flex; gap: 10px; margin-top: 10px }
+.modal input { flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px }
+.modal .btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px }
+.card.add { display: flex; align-items: center; gap: 8px; justify-content: center; color: #4F46E5; border-style: dashed; background: #f8fafc }
+.card .icon { font-size: 22px; margin-bottom: 6px }
+.tag { display: inline-block; margin-left: 6px; font-size: 10px; background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; border-radius: 999px; padding: 1px 6px; vertical-align: middle }
 </style>
