@@ -208,21 +208,74 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
 }
 
 // flex ยกเลิกรายการเรียบร้อย
-function buildCancelSuccessFlex() {
+function buildCancelSuccessFlex({ amount, type, pocketName, description, deletedAt } = {}) {
+  const sign = type === 'income' ? '+' : '-'
+  const palette = THEME.expense
+  const title = 'ยกเลิกรายการ'
+  const amountText = amount != null ? `${sign}${formatCurrency(amount)} บาท` : ''
+  const dateText = formatThaiDate(deletedAt)
+  const timeText = formatThaiTime(deletedAt)
+
   return {
     type: 'flex',
-    altText: 'ยกเลิกรายการเรียบร้อย',
+    altText: `${title} ${description || ''} ${amountText}`.trim(),
     contents: {
       type: 'bubble',
       size: 'mega',
       styles: {
         header: { backgroundColor: THEME.cardBg },
-        body: { backgroundColor: THEME.cardBg },
-        footer: { backgroundColor: THEME.cardBg },
+        body: { backgroundColor: THEME.cardBg }
+      },
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        contents: [
+          {
+            type: 'box',
+            layout: 'baseline',
+            contents: [
+              { type: 'text', text: title, weight: 'bold', size: 'sm', color: palette.accent },
+              { type: 'text', text: `• ${dateText} ${timeText}`.trim(), size: 'xs', color: THEME.subtext, margin: 'md' },
+            ],
+          },
+          amountText ? { type: 'text', text: amountText, weight: 'bold', size: '3xl', color: THEME.text, margin: 'sm' } : { type: 'filler' },
+        ],
       },
       body: {
-        type: 'box', layout: 'vertical', paddingAll: '16px', contents: [
-          { type: 'text', text: 'ยกเลิกรายการเรียบร้อย', weight: 'bold', size: 'lg', color: THEME.text },
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: [
+          pocketName ? {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'box',
+                layout: 'horizontal',
+                backgroundColor: palette.accentSoft,
+                cornerRadius: '6px',
+                paddingAll: '6px',
+                contents: [
+                  { type: 'text', text: 'หมวด', size: 'xs', color: THEME.subtext },
+                  { type: 'text', text: `• ${pocketName}`, size: 'xs', color: THEME.text, margin: 'sm' },
+                ],
+              },
+            ],
+          } : { type: 'filler' },
+          description ? {
+            type: 'box',
+            layout: 'vertical',
+            backgroundColor: THEME.softBg,
+            cornerRadius: '10px',
+            paddingAll: '12px',
+            contents: [
+              { type: 'text', text: 'รายละเอียด', size: 'xs', color: THEME.subtext },
+              { type: 'text', text: description, size: 'md', color: THEME.text, wrap: true, margin: 'xs' },
+            ],
+          } : { type: 'filler' },
         ],
       },
     },
@@ -249,8 +302,7 @@ function chip(text, colorBg) {
 }
 
 function mapChips(pockets, softBg) {
-  const items = pockets.map(p => chip(`${p.icon ? p.icon + ' ' : ''}${p.name}`, softBg))
-  // Arrange chips in rows of up to 2 per row (Flex supports horizontal boxes)
+  const items = pockets.map(p => chip(`${p.name}`, softBg))
   const rows = []
   for (let i = 0; i < items.length; i += 2) {
     rows.push({ type: 'box', layout: 'horizontal', spacing: 'sm', contents: items.slice(i, i + 2) })
@@ -281,7 +333,7 @@ function buildPocketsFlex({ incomePockets = [], expensePockets = [] }, opts = {}
       },
       footer: {
         type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการ', text: 'กาแฟ 45' } },
+          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการด่วน', uri: '/quick-add' } },
           { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'ตั้งค่า Pocket', uri: openUri } },
         ]
       }

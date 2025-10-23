@@ -56,8 +56,18 @@ async function processEvent(event) {
         await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [{ type: 'text', text: 'ไม่พบรายการ หรือรายการนี้ถูกลบไปแล้ว' }] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
         return
       }
+      // read pocket name for richer message
+      const pocket = await Pocket.findOne({ _id: tx.pocketId }).select('name type').lean()
       await Model.deleteOne({ _id: params.tid, userId: user._id })
-      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [buildCancelSuccessFlex()] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
+      const deletedAt = new Date()
+      const cancelFlex = buildCancelSuccessFlex({
+        amount: tx.amount,
+        type: pocket?.type || params.type,
+        pocketName: pocket?.name || '',
+        description: tx.description,
+        deletedAt,
+      })
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [cancelFlex] }, { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } })
       return
     }
     return
@@ -107,7 +117,7 @@ async function processEvent(event) {
   }
 
   // list pockets
-  if (/^(ดูหมวดหมู่|หมวดหมู่ของฉัน)$/.test(text)) {
+  if (/^(หมวดหมู่|หมวดหมู่ทั้งหมด|ดูหมวดหมู่|หมวดหมู่ของฉัน)$/.test(text)) {
     const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
     const typing = createTypingController(event, headers)
 

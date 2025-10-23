@@ -1,5 +1,8 @@
 <template>
-  <div>กำลังเข้าสู่ระบบด้วย LINE...</div>
+  <div class="">
+    <div>กำลังเข้าสู่ระบบด้วย LINE...</div>
+  </div>
+  <LoadingOverlay />
 </template>
 
 <script>
@@ -7,6 +10,7 @@ import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import Swal from 'sweetalert2'
+import LoadingOverlay from '../shared/LoadingOverlay.vue'
 
 export default {
   setup() {
@@ -41,11 +45,11 @@ export default {
             store.dispatch('fetchIncome'),
             store.dispatch('fetchExpenses')
           ])
-        } catch (e) {}
+        } catch (e) { }
         return router.push('/dashboard')
       }
 
-  if (token) {
+      if (token) {
         // ✅ บันทึก token อย่างปลอดภัยและตั้งค่า expiry (6 ชั่วโมง)
         store.commit('setToken', token)
         const expireAt = Date.now() + 6 * 60 * 60 * 1000
@@ -60,7 +64,7 @@ export default {
               html: 'เพื่อรับการแจ้งเตือนและใช้งานผ่าน LINE ได้เต็มที่ กรุณาเพิ่มเพื่อน LINE Official ของเรา',
               confirmButtonText: 'เพิ่มเพื่อน LINE OA',
               cancelButtonText: 'ข้ามตอนนี้',
-              showCancelButton: true,
+              showCancelButton: false,
             })
             if (result.isConfirmed) {
               // เปิดในแท็บใหม่เพื่อไม่ขัดจังหวะโฟลว์ของแอป

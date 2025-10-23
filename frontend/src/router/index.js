@@ -100,6 +100,12 @@ const routes = [
     name: 'Settings',
     component: Settings,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/quick-add',
+    name: 'QuickAdd',
+    component: QuickAdd,
+    meta: { requiresAuth: true }
   }
 ]
 
