@@ -57,10 +57,10 @@
                 </div>
               </div>
               <div class="pocket-actions">
-                <button class="btn btn-sm btn-outline-primary" @click.stop="editPocket(pocket)" title="แก้ไข">
+                <button class="btn btn-sm btn-outline-primary" @click.stop="editPocket(pocket)" title="Edit">
                   <i class="fa-solid fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger" @click.stop="deletePocket(pocket)" title="ลบ">
+                <button class="btn btn-sm btn-outline-danger" @click.stop="deletePocket(pocket)" title="Delete">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
@@ -102,10 +102,10 @@
                 </div>
               </div>
               <div class="pocket-actions">
-                <button class="btn btn-sm btn-outline-primary" @click.stop="editPocket(pocket)" title="แก้ไข">
+                <button class="btn btn-sm btn-outline-primary" @click.stop="editPocket(pocket)" title="Edit">
                   <i class="fa-solid fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger" @click.stop="deletePocket(pocket)" title="ลบ">
+                <button class="btn btn-sm btn-outline-danger" @click.stop="deletePocket(pocket)" title="Delete">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
@@ -201,10 +201,10 @@
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="mb-0">เพิ่มหมวดหมู่{{ newPocketType === 'income' ? 'รายรับ' : 'รายจ่าย' }}</h3>
+          <h3 class="mb-0">Add {{ newPocketType === 'income' ? 'income' : 'expense' }} category</h3>
           <div class="d-flex gap-2">
-            <button class="btn btn-light" @click="selectRecommended">เลือกที่แนะนำ</button>
-            <button class="btn btn-outline-secondary" @click="clearPresetSelection">ยกเลิกทั้งหมด</button>
+            <button class="btn btn-light" @click="selectRecommended">Select recommended</button>
+            <button class="btn btn-outline-secondary" @click="clearPresetSelection">Clear all</button>
             <button type="button" class="btn-close" @click="closeModal"></button>
           </div>
         </div>
@@ -218,21 +218,21 @@
             <!-- Custom add card -->
             <div class="preset-card add" @click.stop="openCustomPreset">
               <div class="preset-icon"><i class="fa-solid fa-plus"></i></div>
-              <div class="preset-name">เพิ่มหมวดเอง</div>
+              <div class="preset-name">Add custom</div>
             </div>
           </div>
 
           <!-- inline custom row -->
           <div v-if="showCustomPreset" class="custom-row mt-3 d-flex gap-2">
-            <input v-model="customPresetName" class="form-control" placeholder="เช่น อาหาร/ค่าเช่า/เงินเดือน" />
-            <button class="btn btn-primary" @click="addCustomPreset">เพิ่ม</button>
-            <button class="btn btn-outline-secondary" @click="cancelCustomPreset">ยกเลิก</button>
+            <input v-model="customPresetName" class="form-control" placeholder="e.g., Food/Rent/Salary" />
+            <button class="btn btn-primary" @click="addCustomPreset">Add</button>
+            <button class="btn btn-outline-secondary" @click="cancelCustomPreset">Cancel</button>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" @click="closeModal">ปิด</button>
+          <button type="button" class="btn btn-outline-secondary" @click="closeModal">Close</button>
           <button type="button" class="btn btn-primary" :disabled="presetSelected.size === 0" @click="createSelectedPresets">
-            ยืนยันการเลือก
+            Confirm selection
           </button>
         </div>
       </div>
@@ -242,17 +242,17 @@
     <div v-if="showEditModal" class="modal-overlay" @click.self="closeEditModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="mb-0">แก้ไขหมวดหมู่</h3>
+          <h3 class="mb-0">Edit category</h3>
           <button type="button" class="btn-close" @click="closeEditModal"></button>
         </div>
         <form @submit.prevent="updatePocket">
           <div class="modal-body">
             <div class="form-group mb-3">
-              <label class="form-label">ชื่อหมวดหมู่</label>
+              <label class="form-label">Category name</label>
               <input v-model="editingName" class="form-control" required />
             </div>
             <div class="form-group">
-              <label class="form-label">ไอคอน</label>
+              <label class="form-label">Icon</label>
               <div class="icon-grid mt-2">
                 <div v-for="icon in availableIcons" :key="icon.value" class="icon-option" :class="{ selected: editingIcon === icon.value }" @click="editingIcon = icon.value">
                   <i :class="icon.value"></i>
@@ -262,10 +262,10 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" @click="closeEditModal">
-              ยกเลิก
+              Cancel
             </button>
             <button type="submit" class="btn btn-primary">
-              บันทึก
+              Save
             </button>
           </div>
         </form>
@@ -506,13 +506,13 @@ export default {
 
   const deleteSelectedPockets = async () => {
       const result = await Swal.fire({
-        title: 'ยืนยันการลบ',
-        text: `ต้องการลบหมวดหมู่ที่เลือกทั้งหมด ${selectedPockets.value.length} รายการหรือไม่?`,
+        title: 'Confirm deletion',
+        text: `Delete all ${selectedPockets.value.length} selected categories?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        confirmButtonText: 'ลบ',
-        cancelButtonText: 'ยกเลิก'
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
       })
 
       if (result.isConfirmed) {
@@ -540,13 +540,13 @@ export default {
 
     const deletePocket = async (pocket) => {
       const result = await Swal.fire({
-        title: 'ยืนยันการลบ',
-        text: `ต้องการลบหมวดหมู่ "${pocket.name}" หรือไม่?`,
+        title: 'Confirm deletion',
+        text: `Delete category "${pocket.name}"?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        confirmButtonText: 'ลบ',
-        cancelButtonText: 'ยกเลิก'
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
       })
 
       if (result.isConfirmed) {
@@ -586,10 +586,10 @@ export default {
       if (!editingPocket.value) return
       try {
         const name = (editingName.value || '').trim()
-        if (!name) throw new Error('กรุณากรอกชื่อหมวดหมู่')
+        if (!name) throw new Error('Please enter a category name')
         const exists = store.state.pockets.some(p => p._id !== editingPocket.value._id && p.type === editingPocket.value.type && p.name === name)
         if (exists) {
-          await Swal.fire({ icon: 'warning', title: 'มีหมวดหมู่นี้อยู่แล้ว', text: 'ไม่สามารถเปลี่ยนซ้ำซ้อนในประเภทเดียวกันได้' })
+          await Swal.fire({ icon: 'warning', title: 'Category already exists', text: 'Cannot duplicate within the same type.' })
           return
         }
         await store.dispatch('updatePocket', {
@@ -619,7 +619,7 @@ export default {
     const presetList = computed(() => {
       const isIncome = newPocketType.value === 'income'
       const list = isIncome ? incomeCatalog.value : expenseCatalog.value
-      const catalogPresets = list.map(c => ({ type: c.type, name: c.nameTh || c.name || c.id, icon: c.icon, source: 'catalog' }))
+  const catalogPresets = list.map(c => ({ type: c.type, name: c.nameEn || c.name || c.id, icon: c.icon, source: 'catalog' }))
       const existing = (isIncome ? incomePockets.value : expensePockets.value)
         .map(p => ({ type: p.type, name: p.name, icon: p.icon, source: 'existing', _id: p._id }))
       const temps = customTempPresets.value.filter(t => t.type === (isIncome ? 'income' : 'expense'))
@@ -656,10 +656,10 @@ export default {
     }
 
     const selectRecommended = () => {
-      // Heuristic: preselect 2-3 common presets
+      // Heuristic: preselect 2-3 common presets (English)
       const recommended = (newPocketType.value === 'income')
-        ? ['income:เงินเดือน', 'income:ธุรกิจส่วนตัว', 'income:งานพิเศษ']
-        : ['expense:อาหาร/เครื่องดื่ม', 'expense:เดินทาง', 'expense:อื่นๆ']
+        ? ['income:Salary', 'income:Side income', 'income:Bonus']
+        : ['expense:Food & Drinks', 'expense:Transport', 'expense:Others']
       const keys = new Set(presetSelected.value)
       for (const k of recommended) keys.add(k)
       presetSelected.value = keys
@@ -733,7 +733,7 @@ export default {
           await store.dispatch('createPocket', { type: t, name, icon })
         }
 
-  await Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', html: `${addList}${removeList}` })
+  await Swal.fire({ icon: 'success', title: 'Saved', html: `${addList}${removeList}` })
         closeModal()
       } catch (error) {
         Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to create pockets' })
@@ -804,14 +804,14 @@ export default {
         isLoading.value = true
       } catch (error) {
         console.error('Error loading pockets:', error)
-        if (error.message.includes('กรุณาเข้าสู่ระบบ')) {
+        if (error.message.includes('Please sign in')) {
           // Redirect to login if not authenticated
           router.push('/login')
         } else {
           Swal.fire({
             icon: 'error',
-            title: 'เกิดข้อผิดพลาด',
-            text: 'ไม่สามารถโหลดข้อมูลหมวดหมู่ได้'
+            title: 'Error',
+            text: 'Unable to load categories'
           })
         }
       } finally {
@@ -829,8 +829,8 @@ export default {
         console.error('Error loading transactions:', error)
         Swal.fire({
           icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: 'ไม่สามารถโหลดข้อมูลรายการได้'
+          title: 'Error',
+          text: 'Unable to load transactions'
         })
       }
     }
@@ -890,10 +890,10 @@ export default {
     const addNewPocket = async () => {
       try {
         const name = (newPocket.value.name || '').trim()
-        if (!name) throw new Error('กรุณากรอกชื่อหมวดหมู่')
+        if (!name) throw new Error('Please enter a category name')
         const exists = store.state.pockets.some(p => p.type === newPocketType.value && p.name === name)
         if (exists) {
-          await Swal.fire({ icon: 'warning', title: 'มีหมวดหมู่นี้อยู่แล้ว', text: 'คุณได้สร้างหมวดหมู่นี้ไว้แล้วสำหรับประเภทนี้' })
+          await Swal.fire({ icon: 'warning', title: 'Category already exists', text: 'You already created this category for this type.' })
           return
         }
         const pocket = { name, icon: newPocket.value.icon || (newPocketType.value === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping'), type: newPocketType.value }

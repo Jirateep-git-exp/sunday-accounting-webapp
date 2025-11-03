@@ -1,36 +1,36 @@
 <template>
   <div class="intro">
     <div class="hero">
-      <h1>เริ่มใช้งาน Cloud Pocket ได้ในไม่กี่นาที</h1>
-      <p class="sub">จดรายรับ-รายจ่ายผ่าน LINE แล้วให้ระบบจัดหมวดให้อัตโนมัติ</p>
+      <h1>Get started with Cloud Pocket in minutes</h1>
+      <p class="sub">Log income and expenses via LINE and let the system auto-categorize for you</p>
     </div>
 
     <div class="steps">
       <div class="step">
         <span class="badge">1</span>
         <div>
-          <h3>จดใน LINE</h3>
-          <p>พิมพ์เช่น “มาม่า100” หรือ “เงินเดือน25000”</p>
+          <h3>Log via LINE</h3>
+          <p>Type like “coffee 100” or “salary 25000”</p>
         </div>
       </div>
       <div class="step">
         <span class="badge">2</span>
         <div>
-          <h3>จัดหมวดอัตโนมัติ</h3>
-          <p>ระบบจะเดาหมวดจากคำที่พิมพ์อัตโนมัติ</p>
+          <h3>Auto-categorize</h3>
+          <p>The system guesses the category from your text</p>
         </div>
       </div>
       <div class="step">
         <span class="badge">3</span>
         <div>
-          <h3>ตั้งค่าหมวดครั้งแรก</h3>
-          <p>ใช้เวลาไม่เกิน 5 นาที เลือก Pocket ที่ต้องการ</p>
+          <h3>Initial setup</h3>
+          <p>Take less than 5 minutes to choose your Pockets</p>
         </div>
       </div>
     </div>
 
     <div class="cta">
-      <button class="primary" @click="go()">เริ่มเลือกหมวด (รายรับ)</button>
+      <button class="primary" @click="go()">Start selecting (Income)</button>
     </div>
   </div>
 </template>

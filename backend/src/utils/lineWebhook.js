@@ -18,6 +18,48 @@ const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN
 const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push'
 const MONGODB_URI = process.env.MONGODB_URI
 
+// --- Lightweight in-memory guards to avoid duplicate processing ---
+// NOTE: For multi-instance deployments, replace these Maps with Redis to share state across instances.
+const inFlightByUser = new Map() // userId -> expiresAt (ms)
+const processedMessageIds = new Map() // messageId -> expiresAt (ms)
+
+const nowMs = () => Date.now()
+const DEFAULT_LOCK_TTL = Number(process.env.LINE_PROCESSING_LOCK_TTL_MS || 10000) // 10s
+const DEFAULT_MSG_TTL = Number(process.env.LINE_MSG_DEDUP_TTL_MS || 5 * 60 * 1000) // 5m
+
+function cleanupMap(map) {
+  const t = nowMs()
+  for (const [k, exp] of map.entries()) {
+    if (exp <= t) map.delete(k)
+  }
+}
+
+function tryAcquireUserLock(userId, ttl = DEFAULT_LOCK_TTL) {
+  cleanupMap(inFlightByUser)
+  const t = nowMs()
+  const exp = inFlightByUser.get(userId)
+  if (exp && exp > t) return false
+  inFlightByUser.set(userId, t + ttl)
+  return true
+}
+
+function releaseUserLock(userId) {
+  inFlightByUser.delete(userId)
+}
+
+function isMessageProcessed(messageId) {
+  cleanupMap(processedMessageIds)
+  const t = nowMs()
+  const exp = processedMessageIds.get(messageId)
+  return Boolean(exp && exp > t)
+}
+
+function markMessageProcessed(messageId, ttl = DEFAULT_MSG_TTL) {
+  processedMessageIds.set(messageId, nowMs() + ttl)
+  // Occasional cleanup if map grows
+  if (processedMessageIds.size > 500) cleanupMap(processedMessageIds)
+}
+
 async function ensureDb() {
   if (!MONGODB_URI) {
     console.error('Missing MONGODB_URI environment variable')
@@ -75,6 +117,12 @@ async function processEvent(event) {
 
   if (event.type !== 'message' || event.message.type !== 'text') return
 
+  // Drop redeliveries and already handled message ids (idempotency)
+  const isRedelivery = Boolean(event.deliveryContext && event.deliveryContext.isRedelivery)
+  if (isRedelivery && event.message?.id && isMessageProcessed(event.message.id)) {
+    return
+  }
+
   const text = event.message.text.trim()
 
   // simple commands
@@ -107,7 +155,8 @@ async function processEvent(event) {
           const typingMsg = typingImageUrl ? buildTypingImageMessage(typingImageUrl) : buildTypingMessage()
           await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [typingMsg] }, headers)
           replied = true
-        } catch (_) {}
+        } catch (e) {
+        }
       }
     }, delayMs)
     return {
@@ -117,7 +166,7 @@ async function processEvent(event) {
   }
 
   // list pockets
-  if (/^(หมวดหมู่|หมวดหมู่ทั้งหมด|ดูหมวดหมู่|หมวดหมู่ของฉัน|pockets|categories|my\s*categories)$/i.test(text)) {
+  if (/^(หมวดหมู่|หมวดหมู่ทั้งหมด|ดูหมวดหมู่|หมวดหมู่ของฉัน|pocket|pockets|categories|my\s*categories)$/i.test(text)) {
     const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
     const typing = createTypingController(event, headers)
 
@@ -171,7 +220,7 @@ async function processEvent(event) {
   }
 
   // summary today
-  if (/^สรุปวันนี้$/.test(text) || /^today\s*summary$/i.test(text)) {
+  if (/^สรุปวันนี้$/.test(text) || /^today\s*summary$/i.test(text) || /^summary\s*today$/i.test(text) || /^today$/i.test(text) || /^summary$/i.test(text)) {
   const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
   const typing = createTypingController(event, headers)
   const now2 = new Date()
@@ -199,8 +248,16 @@ async function processEvent(event) {
   // supports: "ข้าวมันไก่ 55", "มาม่า100", "กาแฟ-45", "โบนัส+1000"
   const match = text.match(/^(.+?)(?:\s*|\s*[-+]?)(-?\d+)(?:\s*(?:บาท|baht))?$/i)
   if (match) {
-  const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
-  const typing = createTypingController(event, headers)
+    const headers = { headers: { 'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}` } }
+    const typing = createTypingController(event, headers)
+    // Guard: prevent concurrent duplicate submissions from the same user
+    const userLockOk = tryAcquireUserLock(lineUserId)
+    if (!userLockOk) {
+      typing.done()
+      const waitMsg = { type: 'text', text: 'กำลังประมวลผลรายการก่อนหน้านี้อยู่ กรุณารอสักครู่…' }
+      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [waitMsg] }, headers)
+      return
+    }
     const description = match[1]
     const amount = Number(match[2])
   const pocketInfo = guessPocket(description)
@@ -259,24 +316,46 @@ async function processEvent(event) {
       } else {
         await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [msg] }, headers)
       }
+      releaseUserLock(lineUserId)
       return
     }
 
   // สร้าง transaction โดยใช้เวลาโซนเอเชีย/กรุงเทพ (แปลงจาก UTC ไปเป็น local time ก่อนเก็บ)
   const nowLocal = new Date(new Date().toLocaleString('en-US', { timeZone: TimeZone }))
   const transactionData = { amount, description, date: nowLocal, pocketId: pocket._id, userId: user._id, createdByEmail: user.email }
+    // Optional soft dedup within short window after success (same user+desc+amount within 45s)
+    const DEDUP_WINDOW_MS = Number(process.env.TX_DEDUP_WINDOW_MS || 45_000)
+    const since = new Date(Date.now() - DEDUP_WINDOW_MS)
+    const Model = pocket.type === 'income' ? Income : Expense
+    const existing = await Model.findOne({
+      userId: user._id,
+      amount: amount,
+      description: description,
+      date: { $gte: since },
+    }).sort({ date: -1 }).lean()
+
     let created
-    if (pocket.type === 'income') created = await Income.create(transactionData)
-    else created = await Expense.create(transactionData)
+    if (existing) {
+      // If a very recent identical transaction exists, reuse it instead of creating a duplicate
+      created = existing
+    } else {
+      if (pocket.type === 'income') created = await Income.create(transactionData)
+      else created = await Expense.create(transactionData)
+    }
 
     // ตอบกลับ LINE (Flex)
     const token = authService.generateToken(user)
     const flex = buildConfirmFlex({ description, amount, pocketName: pocket.name, type: pocket.type, transactionId: created?._id }, { token })
-    typing.done()
-    if (typing.replied()) {
-      await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [flex] }, headers)
-    } else {
-      await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [flex] }, headers)
+    try {
+      typing.done()
+      if (typing.replied()) {
+        await axios.post(LINE_PUSH_URL, { to: event.source.userId, messages: [flex] }, headers)
+      } else {
+        await axios.post(LINE_REPLY_URL, { replyToken: event.replyToken, messages: [flex] }, headers)
+      }
+    } finally {
+      releaseUserLock(lineUserId)
+      if (event.message?.id) markMessageProcessed(event.message.id)
     }
     return
   }

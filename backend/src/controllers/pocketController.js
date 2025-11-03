@@ -10,7 +10,7 @@ const defaultPockets = catalog.filter(c => [
   'salary','bonus','side-income',
   // expense essentials
   'food','groceries','transport','housing','phone-internet','utilities','others'
-].includes(c.id)).map(c => ({ name: c.nameTh, type: c.type, icon: c.icon }));
+].includes(c.id)).map(c => ({ name: c.nameEn, type: c.type, icon: c.icon }));
 
 exports.createPocket = async (req, res) => {
   try {

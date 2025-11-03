@@ -78,10 +78,10 @@ const routes = [
     name: 'OnboardingIntro',
     component: OnboardingIntro
   },
-  {
-    path: '/onboarding-intro',
-    redirect: { name: 'OnboardingIntro' }
-  },
+  // {
+  //   path: '/onboarding-intro',
+  //   redirect: { name: 'OnboardingIntro' }
+  // },
   {
     path: '/connect-line',
     name: 'ConnectLine',

@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <div>กำลังเข้าสู่ระบบด้วย LINE...</div>
+    <div>Signing in with LINE...</div>
   </div>
   <LoadingOverlay />
 </template>
@@ -30,15 +30,15 @@ export default {
       if (error === 'lineid_in_use') {
         await Swal.fire({
           icon: 'error',
-          title: 'เชื่อมบัญชีไม่สำเร็จ',
-          text: 'LINE นี้มีการใช้งานในระบบแล้ว กรุณาใช้บัญชีไลน์อื่น',
-          confirmButtonText: 'ไปหน้า ตั้งค่า'
+          title: 'Linking failed',
+          text: 'This LINE account is already linked. Please use another LINE account.',
+          confirmButtonText: 'Go to Settings'
         })
         return router.replace('/settings')
       }
 
       if (linked) {
-        // กรณีเชื่อมบัญชีสำเร็จ (ผู้ใช้ล็อกอินอยู่แล้ว) แค่รีโหลดข้อมูล
+        // Linked successfully while already logged in; just refresh data
         try {
           await Promise.all([
             store.dispatch('fetchPockets'),
@@ -50,32 +50,32 @@ export default {
       }
 
       if (token) {
-        // ✅ บันทึก token อย่างปลอดภัยและตั้งค่า expiry (6 ชั่วโมง)
+        // ✅ Store token and set expiry (6 hours)
         store.commit('setToken', token)
         const expireAt = Date.now() + 6 * 60 * 60 * 1000
         localStorage.setItem('token_expire_at', String(expireAt))
 
-        // ✅ กรณีล็อกอินด้วย LINE ครั้งแรกและมีลิงก์เพิ่มเพื่อน ให้แจ้งผู้ใช้ก่อนนำทาง
+        // ✅ On first LINE login with an Add Friend link, prompt user before navigating
         if (isFirst && addFriendUrl) {
           try {
             const result = await Swal.fire({
               icon: 'info',
-              title: 'ยินดีต้อนรับ!',
-              html: 'เพื่อรับการแจ้งเตือนและใช้งานผ่าน LINE ได้เต็มที่ กรุณาเพิ่มเพื่อน LINE Official ของเรา',
-              confirmButtonText: 'เพิ่มเพื่อน LINE OA',
-              cancelButtonText: 'ข้ามตอนนี้',
+              title: 'Welcome!',
+              html: 'To receive notifications and use LINE features fully, please add our LINE Official account as a friend.',
+              confirmButtonText: 'Add LINE OA',
+              cancelButtonText: 'Skip for now',
               showCancelButton: false,
             })
             if (result.isConfirmed) {
-              // เปิดในแท็บใหม่เพื่อไม่ขัดจังหวะโฟลว์ของแอป
+              // Open in a new tab to not disrupt app flow
               window.open(addFriendUrl, '_blank', 'noopener')
             }
           } catch (e) {
-            // เฉยๆ หาก Swal มีปัญหา ไม่ให้บล็อคการเข้าใช้งาน
+            // Ignore if Swal fails; don't block access
           }
         }
 
-        // ✅ โหลดข้อมูลหลักก่อนค่อยนำทาง (ลดจอว่างและปัญหา 401 แรกเริ่ม)
+        // ✅ Preload main data before navigating (reduce empty screens and early 401s)
         try {
           await Promise.all([
             store.dispatch('fetchPockets'),
@@ -83,7 +83,7 @@ export default {
             store.dispatch('fetchExpenses')
           ])
         } catch (e) {
-          // หากโหลดไม่ได้ ให้ล้างสถานะและกลับไปหน้า login
+          // If loading fails, clear state and go back to login
           store.commit('setToken', null)
           store.commit('setUser', null)
           localStorage.removeItem('token_expire_at')

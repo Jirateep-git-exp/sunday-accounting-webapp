@@ -34,7 +34,8 @@ function formatLocalTime(date) {
 
 function formatCurrency(amount) {
   try {
-    return amount.toLocaleString('th-TH')
+    const n = Number(amount) || 0
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(n)
   } catch (_) {
     return String(amount)
   }
@@ -42,8 +43,40 @@ function formatCurrency(amount) {
 
 function buildHelpMessage() {
   return {
-    type: 'text',
-    text: 'Type to log like: "coffee 45", "noodles 100", or "salary 25000"\nCommands: help, today, balance',
+    type: 'flex',
+    altText: 'Help - Commands',
+    contents: {
+      type: 'bubble',
+      size: 'mega',
+      styles: { body: { backgroundColor: THEME.cardBg }, footer: { backgroundColor: THEME.cardBg } },
+      body: {
+        type: 'box', layout: 'vertical', paddingAll: '16px', spacing: 'md', contents: [
+          { type: 'text', text: 'Help - Commands', weight: 'bold', size: 'lg', color: THEME.text },
+          { type: 'separator' },
+          // Log transaction
+          { type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+            { type: 'text', text: '📝', size: 'lg' },
+            { type: 'text', text: 'Log transaction', weight: 'bold', size: 'sm', color: THEME.text },
+          ]},
+          { type: 'text', text: 'Type like: "coffee 2.99" or "salary 59"', size: 'xs', color: THEME.subtext, margin: 'md' },
+          { type: 'separator' },
+          // View summary
+          { type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+            { type: 'text', text: '📊', size: 'lg' },
+            { type: 'text', text: 'View summary', weight: 'bold', size: 'sm', color: THEME.text },
+          ]},
+          { type: 'text', text: 'Type "summary" or "summary 7 days"', size: 'xs', color: THEME.subtext, margin: 'md' },
+          { type: 'separator' },
+          // View categories
+          { type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+            { type: 'text', text: '📁', size: 'lg' },
+            { type: 'text', text: 'View categories', weight: 'bold', size: 'sm', color: THEME.text },
+          ]},
+          { type: 'text', text: 'Type "pockets" or "categories"', size: 'xs', color: THEME.subtext, margin: 'md' },
+          { type: 'separator' },
+        ]
+      }
+    }
   }
 }
 
@@ -104,7 +137,7 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
               { type: 'text', text: `• ${dateText} ${timeText}`, size: 'xs', color: THEME.subtext, margin: 'md' },
             ],
           },
-          { type: 'text', text: amountText, weight: 'bold', size: '3xl', color: THEME.text, margin: 'sm' },
+          { type: 'text', text: amountText + '$', weight: 'bold', size: '3xl', color: THEME.text, margin: 'sm' },
         ],
       },
       body: {
@@ -239,7 +272,7 @@ function buildCancelSuccessFlex({ amount, type, pocketName, description, deleted
               { type: 'text', text: `• ${dateText} ${timeText}`.trim(), size: 'xs', color: THEME.subtext, margin: 'md' },
             ],
           },
-          amountText ? { type: 'text', text: amountText, weight: 'bold', size: '3xl', color: THEME.text, margin: 'sm' } : { type: 'filler' },
+          amountText ? { type: 'text', text: amountText + '$', weight: 'bold', size: '3xl', color: THEME.text, margin: 'sm' } : { type: 'filler' },
         ],
       },
       body: {
@@ -333,7 +366,6 @@ function buildPocketsFlex({ incomePockets = [], expensePockets = [] }, opts = {}
       },
       footer: {
         type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'Quick add', text: 'coffee 45' } },
           { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'Configure pockets', uri: openUri } },
         ]
       }

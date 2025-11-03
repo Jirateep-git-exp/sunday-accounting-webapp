@@ -1,10 +1,10 @@
 <template>
   <div class="auth-container">
     <div class="auth-card">
-      <h2 class="text-center mb-4">สมัครสมาชิก</h2>
+      <h2 class="text-center mb-4">Register</h2>
       <form @submit.prevent="handleSubmit">
         <div class="mb-3">
-          <label class="form-label">ชื่อผู้ใช้</label>
+          <label class="form-label">Username</label>
           <input
             type="text"
             v-model="username"
@@ -14,7 +14,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">อีเมล</label>
+          <label class="form-label">Email</label>
           <input
             type="email"
             v-model="email"
@@ -24,7 +24,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">รหัสผ่าน</label>
+          <label class="form-label">Password</label>
           <input
             type="password"
             v-model="password"
@@ -34,7 +34,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">ยืนยันรหัสผ่าน</label>
+          <label class="form-label">Confirm password</label>
           <input
             type="password"
             v-model="confirmPassword"
@@ -45,19 +45,19 @@
 
         <div class="d-grid mb-3">
           <button type="submit" class="btn btn-primary" :disabled="isLoading || !isPasswordMatch">
-            {{ isLoading ? 'กำลังสมัครสมาชิก...' : 'สมัครสมาชิก' }}
+            {{ isLoading ? 'Registering...' : 'Register' }}
           </button>
         </div>
 
         <div class="d-grid mb-3">
           <button type="button" @click="loginWithLine" class="btn btn-success">
-            สมัครสมาชิกด้วย LINE
+            Register with LINE
           </button>
         </div>
 
         <p class="text-center">
-          มีบัญชีอยู่แล้ว? 
-          <router-link to="/login">เข้าสู่ระบบ</router-link>
+          Already have an account? 
+          <router-link to="/login">Sign in</router-link>
         </p>
       </form>
     </div>
@@ -98,8 +98,8 @@ export default {
       if (!isPasswordMatch.value) {
         Swal.fire({
           icon: 'error',
-          title: 'รหัสผ่านไม่ตรงกัน',
-          text: 'กรุณาตรวจสอบรหัสผ่านอีกครั้ง'
+          title: 'Passwords do not match',
+          text: 'Please check your password again.'
         })
         return
       }
@@ -115,8 +115,8 @@ export default {
       } catch (error) {
         Swal.fire({
           icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: error.message || 'ไม่สามารถสมัครสมาชิกได้'
+          title: 'Error',
+          text: error.message || 'Unable to register'
         })
       } finally {
         isLoading.value = false
@@ -124,15 +124,15 @@ export default {
     }
 
     onMounted(async () => {
-      // First notification for category reminder
+      // Optional notice (can be removed in production)
       await Swal.fire({
-        title: 'ขออภัย',
-        text: 'เนื่องจาก Server ของเราอยู่ในช่วงทดลองใช้งาน หากท่านพบเจอปัญหาในการกดปุ่มเข้าสู่ระบบหรือปุ่มสมัครสมาชิกแล้วหน้าเว็บไม่ดำเนินการต่อให้ กรุณารอสักครู่ประมาณ 1-2 นาที เนื่องจาก Server ได้ทำการ Sleep ไว้เพื่อประหยัดทรัพยากร ขอออภัยในความไม่สะดวก',
+        title: 'Heads up',
+        text: 'The demo server may sleep. If registration doesn’t proceed, please wait ~1–2 minutes and try again.',
         icon: 'warning',
-        confirmButtonText: 'ทราบแล้ว',
+        confirmButtonText: 'Got it',
         confirmButtonColor: '#6c5ce7',
         showCancelButton: true,
-        cancelButtonText: 'ไม่ต้องเตือนอีก'
+        cancelButtonText: "Don't show again"
       }).then((result) => {
         if (result.isDismissed) {
           localStorage.setItem('suppressCategoryReminder', 'true')

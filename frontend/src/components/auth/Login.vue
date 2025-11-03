@@ -1,10 +1,10 @@
 <template>
   <div class="auth-container">
     <div class="auth-card">
-      <h2 class="text-center mb-4">เข้าสู่ระบบ</h2>
+      <h2 class="text-center mb-4">Sign in</h2>
       <form @submit.prevent="handleSubmit">
         <div class="mb-3">
-          <label class="form-label">อีเมล</label>
+          <label class="form-label">Email</label>
           <input
             type="email"
             v-model="email"
@@ -14,7 +14,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">รหัสผ่าน</label>
+          <label class="form-label">Password</label>
           <input
             type="password"
             v-model="password"
@@ -25,19 +25,19 @@
 
         <div class="d-grid mb-3">
           <button type="submit" class="btn btn-primary" :disabled="isLoading">
-            {{ isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ' }}
+            {{ isLoading ? 'Signing in...' : 'Sign in' }}
           </button>
         </div>
 
         <div class="d-grid mb-3">
           <button type="button" @click="loginWithLine" class="btn btn-success">
-            เข้าสู่ระบบด้วย LINE
+            Sign in with LINE
           </button>
         </div>
 
         <p class="text-center">
-          ยังไม่มีบัญชี? 
-          <router-link to="/register">สมัครสมาชิก</router-link>
+          Don't have an account? 
+          <router-link to="/register">Register</router-link>
         </p>
       </form>
     </div>
@@ -71,8 +71,8 @@ export default {
       } catch (error) {
         Swal.fire({
           icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: error.message || 'ไม่สามารถเข้าสู่ระบบได้'
+          title: 'Error',
+          text: error.message || 'Unable to sign in'
         })
       } finally {
         isLoading.value = false
@@ -88,15 +88,15 @@ export default {
     }
 
     onMounted(async () => {
-      // First notification for category reminder
+      // Optional notice (can be removed in production)
       await Swal.fire({
-        title: 'ขออภัย',
-        text: 'เนื่องจาก Server ของเราอยู่ในช่วงทดลองใช้งาน หากท่านพบเจอปัญหาในการกดปุ่มเข้าสู่ระบบหรือปุ่มสมัครสมาชิกแล้วหน้าเว็บไม่ดำเนินการต่อให้ กรุณารอสักครู่ประมาณ 1-2 นาที เนื่องจาก Server ได้ทำการ Sleep ไว้เพื่อประหยัดทรัพยากร ขอออภัยในความไม่สะดวก',
+        title: 'Heads up',
+        text: 'The demo server may sleep. If sign-in doesn’t proceed, please wait ~1–2 minutes and try again.',
         icon: 'warning',
-        confirmButtonText: 'ทราบแล้ว',
+        confirmButtonText: 'Got it',
         confirmButtonColor: '#6c5ce7',
         showCancelButton: true,
-        cancelButtonText: 'ไม่ต้องเตือนอีก'
+        cancelButtonText: "Don't show again"
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.cancel) {
             localStorage.setItem('suppressCategoryReminder', 'true')
