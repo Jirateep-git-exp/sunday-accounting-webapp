@@ -18,7 +18,7 @@
             <div v-if="showCompareModal" class="compare-modal-overlay" @click.self="showCompareModal = false">
               <div class="compare-modal-content">
                 <div class="modal-header d-flex justify-content-between align-items-center">
-                  <h4 class="mb-0">เปรียบเทียบรายจ่ายระหว่างเดือน</h4>
+                  <h4 class="mb-0">Compare Expenses</h4>
                   <button type="button" class="btn btn-danger" @click="showCompareModal = false">x</button>
                 </div>
                 <div class="modal-body">
@@ -155,7 +155,7 @@
                 <i class="fa-solid fa-arrow-trend-up"></i>
               </div>
               <div>
-                <h6 class="mb-1">รายรับทั้งหมด</h6>
+                <h6 class="mb-1">Total Income</h6>
                 <h3 class="mb-0 text-success">{{ formatAmount(totalIncome) }}</h3>
               </div>
             </div>
@@ -171,7 +171,7 @@
                 <i class="fa-solid fa-arrow-trend-down"></i>
               </div>
               <div>
-                <h6 class="mb-1">รายจ่ายทั้งหมด</h6>
+                <h6 class="mb-1">Total Expenses</h6>
                 <h3 class="mb-0 text-danger">{{ formatAmount(totalExpenses) }}</h3>
               </div>
             </div>
@@ -187,7 +187,7 @@
                 <i class="fa-solid fa-wallet"></i>
               </div>
               <div>
-                <h6 class="mb-1">คงเหลือ</h6>
+                <h6 class="mb-1">Balance</h6>
                 <h3 class="mb-0 text-primary">{{ formatAmount(balance) }}</h3>
               </div>
             </div>
