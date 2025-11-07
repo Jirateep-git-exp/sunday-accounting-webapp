@@ -26,7 +26,7 @@ const incomeSchema = new mongoose.Schema({
   lineUserId: {
     type: String, 
     required: false, 
-    unique: true
+    unique: false
   },
   createdByEmail: {
     type: String,

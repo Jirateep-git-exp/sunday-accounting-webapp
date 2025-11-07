@@ -15,7 +15,8 @@ class PocketService {
 
   static async getAllPockets() {
     try {
-      const headers = this.getAuthHeader();
+      const token = processEvents.env.SERVICE_TOKEN || '';
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const response = await axios.get(API_URL, { headers });
       
       if (!response.data) {
@@ -25,11 +26,6 @@ class PocketService {
       return response.data;
     } catch (error) {
       console.error('Error in getAllPockets:', error);
-      if (error.response?.status === 401) {
-        // Token might be expired or invalid
-        localStorage.removeItem('token');
-        throw new Error('กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
-      }
       throw error;
     }
   }
