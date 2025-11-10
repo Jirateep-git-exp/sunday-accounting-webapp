@@ -14,8 +14,9 @@ const expenseSchema = new mongoose.Schema({
     required: true
   },
   pocketId: {
-    type: String,
-    required: false
+      type: mongoose.Schema.Types.ObjectId,  // เปลี่ยนจาก String เป็น ObjectId
+      ref: 'Pocket',  // เพิ่ม reference ไปยัง Pocket model
+      required: true
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,12 +26,15 @@ const expenseSchema = new mongoose.Schema({
   lineUserId: {
     type: String, 
     required: false, 
-    unique: true
+    unique: false
   },
     createdByEmail: {
     type: String,
     required: true
   }
+},
+{
+  timestamps: true  // เพิ่ม timestamps
 });
 
 module.exports = mongoose.model('Expense', expenseSchema);

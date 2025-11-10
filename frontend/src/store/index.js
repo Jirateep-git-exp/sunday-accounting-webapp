@@ -51,9 +51,13 @@ const store = createStore({
       state.token = token
       if (token) {
         localStorage.setItem('token', token)
+
+        const expireAt = Date.now() + 6 * 60 * 60 * 1000
+        localStorage.setItem('token_expire_at', expireAt)
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       } else {
         localStorage.removeItem('token')
+        localStorage.removeItem('token_expire_at')
         delete axios.defaults.headers.common['Authorization']
       }
     },
