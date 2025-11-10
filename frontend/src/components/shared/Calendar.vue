@@ -9,7 +9,7 @@
       <div class="date-selector" @click="toggleDropdown">
         <div class="current-period">
           <h5 class="month-title">{{ months[selectedMonth] }}</h5>
-          <span class="year-title">{{ selectedYear + 543 }}</span>
+          <span class="year-title">{{ selectedYear }}</span>
         </div>
         <i class="bi bi-chevron-down dropdown-icon" :class="{ 'rotated': showDropdown }"></i>
       </div>
@@ -48,7 +48,7 @@
                         :key="year"
                         :class="['year-btn', { active: selectedYear === year }]"
                         @click.stop="selectYear(year)">
-                  {{ year + 543 }}
+                  {{ year }}
                 </button>
               </div>
             </div>
@@ -85,10 +85,10 @@
             
             <!-- Transaction Indicators -->
             <div v-if="hasTransactions(day.date)" class="transaction-dots">
-              <div v-if="getIncomeForDate(day.date)" class="dot income-dot"
-                   :title="`รายรับ: ${getIncomeAmount(day.date)} บาท`"></div>
-              <div v-if="getExpensesForDate(day.date)" class="dot expense-dot"
-                   :title="`รายจ่าย: ${getExpenseAmount(day.date)} บาท`"></div>
+        <div v-if="getIncomeForDate(day.date)" class="dot income-dot"
+          :title="`รายรับ: ${formatAmount(getIncomeAmount(day.date))}`"></div>
+        <div v-if="getExpensesForDate(day.date)" class="dot expense-dot"
+          :title="`รายจ่าย: ${formatAmount(getExpenseAmount(day.date))}`"></div>
             </div>
           </div>
         </div>
@@ -108,6 +108,7 @@
 <script>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
+import { formatCurrencyLocal } from '../../utils/format'
 
 export default {
   name: 'Calendar',
@@ -125,14 +126,15 @@ export default {
     const currentDate = ref(new Date(props.selectedDate))
     const showDropdown = ref(false)
     
-    // เพิ่มรายชื่อเดือนภาษาไทย
-    const months = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
+    // Month names generated from locale
+    const months = Array.from({ length: 12 }, (_, i) =>
+      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+    )
     
-    const weekDays = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+    // Weekday headers (short, starting Sunday) from locale
+    const weekDays = Array.from({ length: 7 }, (_, i) =>
+      new Date(2000, 0, 2 + i).toLocaleDateString(undefined, { weekday: 'short' })
+    )
     
     // สร้างช่วงปีย้อนหลัง 5 ปี และล่วงหน้า 5 ปี
     const currentYear = new Date().getFullYear()
@@ -150,9 +152,7 @@ export default {
       currentDate.value = new Date(year, month, 1)
     })
     
-    const currentMonthYear = computed(() => {
-      return `${months[selectedMonth.value]} ${selectedYear.value + 543}`
-    })
+    // Removed unused currentMonthYear
     
     const calendar = computed(() => {
       const year = currentDate.value.getFullYear()
@@ -357,6 +357,8 @@ export default {
       document.removeEventListener('click', handleClickOutside, true)
     })
 
+    const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
+
     return {
       // Calendar data
       calendar,
@@ -365,7 +367,7 @@ export default {
       yearRange,
       selectedMonth,
       selectedYear,
-      currentMonthYear,
+      
       
       // State
       showDropdown,
@@ -397,6 +399,9 @@ export default {
       toggleDropdown,
       selectMonth,
       selectYear
+      ,
+      // formatters
+      formatAmount
     }
   }
 }

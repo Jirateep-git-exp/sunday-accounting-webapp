@@ -52,7 +52,7 @@
                 <div class="pocket-info">
                   <h4>{{ pocket.name }}</h4>
                   <p class="amount">
-                    {{ formatAmount(monthlyPocketTotal(pocket._id, 'income')) }} ฿
+                    {{ formatAmount(monthlyPocketTotal(pocket._id, 'income')) }}
                   </p>
                 </div>
               </div>
@@ -97,7 +97,7 @@
                 <div class="pocket-info">
                   <h4>{{ pocket.name }}</h4>
                   <p class="amount">
-                    {{ formatAmount(monthlyPocketTotal(pocket._id, 'expense')) }} ฿
+                    {{ formatAmount(monthlyPocketTotal(pocket._id, 'expense')) }}
                   </p>
                 </div>
               </div>
@@ -150,7 +150,7 @@
                     transaction.type === 'income' ? 'text-success' : 'text-danger'
                   ]">
                     {{ transaction.type === 'income' ? '+' : '-' }}
-                    {{ Number(transaction.amount).toLocaleString() }} ฿
+                    {{ formatAmount(transaction.amount) }}
                   </td>
                 </tr>
                 <tr v-if="pocketTransactions.length === 0">
@@ -164,7 +164,7 @@
                 <tr>
                   <td colspan="2" class="text-end fw-bold">ยอดรวม:</td>
                   <td :class="['text-end fw-bold', pocketTotal >= 0 ? 'text-success' : 'text-danger']">
-                    {{ Number(pocketTotal).toLocaleString() }} ฿
+                    {{ formatAmount(pocketTotal) }}
                   </td>
                 </tr>
               </tfoot>
@@ -279,6 +279,7 @@ import { ref, computed, nextTick, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'CloudPocket',
@@ -304,7 +305,7 @@ export default {
     const editingIcon = ref('')
     const isSelectMode = ref(false)
     const selectedPockets = ref([])
-    const selectedDate = ref(new Date())
+  // Removed unused selectedDate
     const isLoading = ref(false)
 
     // Local fallback catalog in case the store doesn't provide one
@@ -356,9 +357,7 @@ export default {
       return Math.min(startIndex.value + itemsPerPage.value, pocketTransactions.value.length)
     })
 
-    const paginatedTransactions = computed(() => {
-      return pocketTransactions.value.slice(startIndex.value, endIndex.value)
-    })
+    // Removed unused paginatedTransactions (use paginatedData instead)
 
     const displayedPages = computed(() => {
       const pages = []
@@ -414,62 +413,13 @@ export default {
     
 
     // Computed properties สำหรับจำนวนรายการของแต่ละ pocket
-    const getIncomeCount = (pocketId) => {
-      return store.state.income.filter(t => t.pocketId === pocketId).length
-    }
-
-    const getExpenseCount = (pocketId) => {
-      return store.state.expenses.filter(t => t.pocketId === pocketId).length
-    }
+    // Removed unused getIncomeCount/getExpenseCount
 
     // เพิ่ม reactive computed สำหรับข้อมูลที่อัพเดท
-    const reactivePocketData = computed(() => {
-      // Force reactivity by accessing store state
-      const currentIncome = store.state.income
-      const currentExpenses = store.state.expenses
-      const currentPockets = store.state.pockets
+    // Removed unused pocket totals helpers and withTotals computeds
 
-      return {
-        income: currentIncome,
-        expenses: currentExpenses,
-        pockets: currentPockets,
-        timestamp: Date.now() // Force re-computation
-      }
-    })
-
-    const calculatePocketTotal = (pocketId, type) => {
-      // ใช้ reactive data เพื่อให้ re-compute เมื่อข้อมูลเปลี่ยน
-      reactivePocketData.value // ทำให้ reactive
-
-      const transactions = type === 'income'
-        ? store.state.income.filter(t => t.pocketId === pocketId)
-        : store.state.expenses.filter(t => t.pocketId === pocketId);
-      return transactions.reduce((total, t) => total + Number(t.amount), 0);
-    }
-
-    // Income pockets with totals
-    const incomePocketsWithTotals = computed(() => {
-      return incomePockets.value.map(pocket => ({
-        ...pocket,
-        total: calculatePocketTotal(pocket._id, 'income')
-      }));
-    });
-
-    // Expense pockets with totals
-    const expensePocketsWithTotals = computed(() => {
-      return expensePockets.value.map(pocket => ({
-        ...pocket,
-        total: calculatePocketTotal(pocket._id, 'expense')
-      }));
-    });
-
-    // Format amount to Thai Baht
-    const formatAmount = (amount) => {
-      return new Intl.NumberFormat('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(amount);
-    }
+    // USD currency formatter
+    const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
     // กรอง pocketTransactions ตามเดือน/ปีที่เลือก
     const pocketTransactions = computed(() => {
@@ -501,9 +451,7 @@ export default {
       }, 0)
     })
 
-    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('th-TH')
-    }
+    const formatDate = (dateString) => formatDateLocal(dateString)
 
     // เพิ่มรายการไอคอนที่มีให้เลือก
   const availableIcons = [
@@ -854,7 +802,6 @@ export default {
     const loadPockets = async () => {
       try {
         isLoading.value = true
-        await store.dispatch('fetchPockets')
       } catch (error) {
         console.error('Error loading pockets:', error)
         if (error.message.includes('กรุณาเข้าสู่ระบบ')) {
@@ -890,7 +837,6 @@ export default {
 
     const loadCatalog = async () => {
       try {
-        await store.dispatch('fetchPocketCatalog')
       } catch (error) {
         console.error('Error loading pocket catalog:', error)
       }
@@ -910,11 +856,9 @@ export default {
     })
 
     // ตัวเลือกเดือน/ปี
-    const months = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
+    const months = Array.from({ length: 12 }, (_, i) =>
+      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+    )
     const currentYear = new Date().getFullYear()
     const yearRange = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
     const selectedMonth = ref(new Date().getMonth())
@@ -985,9 +929,6 @@ export default {
   addCustomPreset,
   createSelectedPresets,
       
-      calculatePocketTotal,
-      incomePocketsWithTotals,
-      expensePocketsWithTotals,
       formatAmount,
       pocketTransactions,
       pocketTotal,
@@ -1006,7 +947,6 @@ export default {
       updatePocket,
       deletePocket,
       deleteSelectedPockets,
-      selectedDate, // เพิ่ม selectedDate ใน return
       itemsPerPage,
       currentPage,
       totalPages,
@@ -1021,10 +961,7 @@ export default {
       loadPockets,
       loadTransactions,
       // เพิ่มฟังก์ชันที่จำเป็น
-      isLoading,
-      getIncomeCount,
-      getExpenseCount,
-      reactivePocketData,
+  isLoading,
       // Period selector
       selectedMonth,
       selectedYear,

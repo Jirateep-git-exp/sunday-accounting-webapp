@@ -286,8 +286,8 @@
                           <i class="fa-solid fa-chevron-left"></i>
                         </button>
                         <div class="period-display">
-                          <div class="month-name">{{ thaiMonths[currentMonth] }}</div>
-                          <div class="year-name">{{ currentYear + 543 }}</div>
+                          <div class="month-name">{{ monthNames[currentMonth] }}</div>
+                          <div class="year-name">{{ currentYear }}</div>
                         </div>
                         <button type="button" class="nav-button" @click="nextMonth">
                           <i class="fa-solid fa-chevron-right"></i>
@@ -396,25 +396,25 @@
           <div v-if="selectedTypes.includes('income')" class="summary-item">
             <span class="label">รายรับ:</span>
             <span class="value text-success">
-              {{ validIncomeTransactions.length }} รายการ | {{ formatCurrency(totalIncomeAmount) }} บาท
+              {{ validIncomeTransactions.length }} รายการ | {{ formatCurrencyLocal(totalIncomeAmount, 'USD') }}
             </span>
           </div>
           <div v-if="selectedTypes.includes('expense')" class="summary-item">
             <span class="label">รายจ่าย:</span>
             <span class="value text-danger">
-              {{ validExpenseTransactions.length }} รายการ | {{ formatCurrency(totalExpenseAmount) }} บาท
+              {{ validExpenseTransactions.length }} รายการ | {{ formatCurrencyLocal(totalExpenseAmount, 'USD') }}
             </span>
           </div>
           <div class="summary-item summary-total">
             <span class="label">รวมทั้งหมด:</span>
             <span class="value total-amount">
-              {{ validTransactions.length }} รายการ | {{ formatCurrency(netAmount) }} บาท
+              {{ validTransactions.length }} รายการ | {{ formatCurrencyLocal(netAmount, 'USD') }}
             </span>
           </div>
           <div v-if="netAmount !== 0" class="net-result">
             <span class="net-label">ผลต่าง:</span>
             <span class="net-value" :class="netAmount > 0 ? 'text-success' : 'text-danger'">
-              {{ netAmount > 0 ? '+' : '' }}{{ formatCurrency(netAmount) }} บาท
+              {{ netAmount > 0 ? '+' : '' }}{{ formatCurrencyLocal(netAmount, 'USD') }}
               ({{ netAmount > 0 ? 'กำไร' : 'ขาดทุน' }})
             </span>
           </div>
@@ -441,6 +441,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import Swal from 'sweetalert2'
+import { formatDateLocal, formatCurrencyLocal } from '@/utils/format'
 
 export default {
   props: {
@@ -463,15 +464,15 @@ export default {
     const showDatePicker = ref(null) // Track which transaction's datepicker is open
     const currentMonth = ref(new Date().getMonth())
     const currentYear = ref(new Date().getFullYear())
-
-    // Thai month names
-    const thaiMonths = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
-
-    const weekDays = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+    
+    // Localized month and weekday names
+    const monthNames = Array.from({ length: 12 }, (_, i) =>
+      new Date(2000, i, 1).toLocaleDateString(undefined, { month: 'long' })
+    )
+    // Start from a known Sunday (Aug 1, 2021)
+    const weekDays = Array.from({ length: 7 }, (_, i) =>
+      new Date(Date.UTC(2021, 7, 1 + i)).toLocaleDateString(undefined, { weekday: 'short' })
+    )
 
     // Computed properties
     const incomePockets = computed(() => store.getters.incomePockets)
@@ -551,19 +552,7 @@ export default {
       if (!dateString) return 'เลือกวันที่'
       const date = new Date(dateString)
       if (isNaN(date.getTime())) return 'เลือกวันที่'
-      
-      const day = date.getDate()
-      const month = thaiMonths[date.getMonth()]
-      const year = date.getFullYear() + 543
-      
-      return `${day} ${month} ${year}`
-    }
-
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(amount)
+      return formatDateLocal(date, { year: 'numeric', month: 'long', day: 'numeric' })
     }
 
     const createEmptyTransaction = (type) => ({
@@ -671,7 +660,7 @@ export default {
     }
 
     const selectDate = (date, transactionId) => {
-      if (date > new Date()) return // Don't allow future dates
+  if (date > new Date()) return // Don't allow future dates
       
       const selected = new Date(date.getFullYear(), date.getMonth(), date.getDate())
       selected.setHours(12, 0, 0, 0)
@@ -897,7 +886,7 @@ export default {
       showDatePicker,
       currentMonth,
       currentYear,
-      thaiMonths,
+      monthNames,
       weekDays,
       
       // Computed
@@ -914,7 +903,7 @@ export default {
       calendarDays,
       
       // Methods
-      formatCurrency,
+      formatCurrencyLocal,
       formatDisplayDate,
       toggleTransactionType,
       addTransaction,

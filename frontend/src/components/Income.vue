@@ -109,7 +109,7 @@
                         {{ getPocketName(entry.pocketId) }}
                       </span>
                     </td>
-                    <td class="text-success text-end">{{ formatAmount(entry.amount) }} ฿</td>
+                    <td class="text-success text-end">{{ formatAmount(entry.amount) }}</td>
                     <td class="text-end" v-if="!isSelectMode">
                       <div class="btn-group btn-group-sm">
                         <button class="btn btn-outline-secondary btn-sm" @click="editTransaction(entry)">
@@ -195,6 +195,7 @@ import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
 import EditTransaction from './shared/EditTransaction.vue'
 import Swal from 'sweetalert2'
+import { formatDateLocal, formatCurrencyLocal } from '../utils/format'
 
 export default {
   components: {
@@ -214,11 +215,7 @@ export default {
       direction: 'desc' // default newest first
     })
 
-    const sortedIncomeEntries = computed(() => {
-      return [...store.state.income].sort((a, b) => 
-        new Date(b.date) - new Date(a.date)
-      )
-    })
+    // Removed per cleanup: sortedIncomeEntries (unused)
 
     const totalPages = computed(() => {
       return Math.ceil(filteredEntries.value.length / itemsPerPage.value)
@@ -257,13 +254,7 @@ export default {
       }
     }
 
-    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    }
+    const formatDate = (dateString) => formatDateLocal(dateString)
 
     const handleDateSelected = (date) => {
       // ปรับเวลาให้เป็น 00:00:00
@@ -286,16 +277,7 @@ export default {
       })
     })
 
-    const filteredAndPaginatedEntries = computed(() => {
-      return store.state.income // เปลี่ยนจาก store.state[activeTab.value]
-        .filter(entry => {
-          if (!selectedDate.value) return true
-          const entryDate = new Date(entry.date)
-          return entryDate.toDateString() === selectedDate.value.toDateString()
-        })
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(startIndex.value, endIndex.value)
-    })
+    // Removed per cleanup: filteredAndPaginatedEntries (unused)
 
     // เพิ่มการคำนวณยอดรวมตามวันที่ที่เลือก
     const filteredTotalIncome = computed(() => {
@@ -334,9 +316,7 @@ export default {
       return pocket?.name || 'ไม่ระบุหมวดหมู่'
     }
 
-    const formatAmount = (amount) => {
-      return Number(amount).toLocaleString('th-TH')
-    }
+  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
     const handleTransactionAdded = () => {
       showAddForm.value = false
@@ -487,11 +467,9 @@ export default {
       displayedPages,
       changePage,
       formatDate,
-      sortedIncomeEntries,
-      totalIncome: filteredTotalIncome, // เปลี่ยนจาก store.getters.totalIncome
+      totalIncome: filteredTotalIncome,
       selectedDate,
       filteredEntries,
-      filteredAndPaginatedEntries,
       showAddForm,
       selectedDateTotal,
       currentMonthTotal,

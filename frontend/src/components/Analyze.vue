@@ -53,16 +53,14 @@
                     <div class="row g-3">
                       <div class="col-12 col-md-6">
                         <div class="card p-3">
-                          <h6 class="mb-2">{{ months[compareMonth1] }} {{ compareYear1 + 543 }}</h6>
-                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth1, compareYear1))
-                          }} ฿</div>
+                          <h6 class="mb-2">{{ months[compareMonth1] }} {{ compareYear1 }}</h6>
+                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth1, compareYear1)) }}</div>
                         </div>
                       </div>
                       <div class="col-12 col-md-6">
                         <div class="card p-3">
-                          <h6 class="mb-2">{{ months[compareMonth2] }} {{ compareYear2 + 543 }}</h6>
-                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth2, compareYear2))
-                          }} ฿</div>
+                          <h6 class="mb-2">{{ months[compareMonth2] }} {{ compareYear2 }}</h6>
+                          <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth2, compareYear2)) }}</div>
                         </div>
                       </div>
                     </div>
@@ -158,7 +156,7 @@
               </div>
               <div>
                 <h6 class="mb-1">รายรับทั้งหมด</h6>
-                <h3 class="mb-0 text-success">{{ formatAmount(totalIncome) }} ฿</h3>
+                <h3 class="mb-0 text-success">{{ formatAmount(totalIncome) }}</h3>
               </div>
             </div>
           </div>
@@ -174,7 +172,7 @@
               </div>
               <div>
                 <h6 class="mb-1">รายจ่ายทั้งหมด</h6>
-                <h3 class="mb-0 text-danger">{{ formatAmount(totalExpenses) }} ฿</h3>
+                <h3 class="mb-0 text-danger">{{ formatAmount(totalExpenses) }}</h3>
               </div>
             </div>
           </div>
@@ -190,7 +188,7 @@
               </div>
               <div>
                 <h6 class="mb-1">คงเหลือ</h6>
-                <h3 class="mb-0 text-primary">{{ formatAmount(balance) }} ฿</h3>
+                <h3 class="mb-0 text-primary">{{ formatAmount(balance) }}</h3>
               </div>
             </div>
           </div>
@@ -283,13 +281,13 @@
                     <td>{{ item.type === 'income' ? 'รายรับ' : 'รายจ่าย' }}</td>
                     <td>{{ getPocketName(item.pocketId, item.type) }}</td>
                     <td>{{ item.description }}</td>
-                    <td class="text-end">{{ formatAmount(item.amount) }} ฿</td>
+                    <td class="text-end">{{ formatAmount(item.amount) }}</td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr class="table-light fw-bold">
                     <td colspan="4" class="text-end">รวม</td>
-                    <td class="text-end">{{ formatAmount(totalAmount) }} ฿</td>
+                    <td class="text-end">{{ formatAmount(totalAmount) }}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -325,6 +323,7 @@ import { useStore } from 'vuex'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
+import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'Analyze',
@@ -344,11 +343,9 @@ export default {
     const compareMonth2 = ref(new Date().getMonth())
     const compareYear2 = ref(new Date().getFullYear())
 
-    const months = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
+    const months = Array.from({ length: 12 }, (_, i) =>
+      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+    )
 
     const currentYear = new Date().getFullYear()
     const yearRange = Array.from(
@@ -427,9 +424,7 @@ export default {
     })
 
     // Methods
-    const formatAmount = (amount) => {
-      return Number(amount).toLocaleString('th-TH')
-    }
+  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
     const createChart = (canvas, data, type) => {
       // Pastel colors for income
@@ -535,21 +530,21 @@ export default {
 
       if (exportType.value === 'all' || exportType.value === 'income') {
         data.income = filteredIncome.value.map(item => ({
-          date: new Date(item.date).toLocaleDateString('th-TH'),
+          date: formatDateLocal(item.date),
           type: 'รายรับ',
           category: store.state.pockets.find(p => p._id === item.pocketId)?.name || 'ไม่ระบุ',
           description: item.description,
-          amount: Number(item.amount).toLocaleString('th-TH')
+          amount: formatAmountLocal(item.amount)
         }))
       }
 
       if (exportType.value === 'all' || exportType.value === 'expense') {
         data.expense = filteredExpenses.value.map(item => ({
-          date: new Date(item.date).toLocaleDateString('th-TH'),
+          date: formatDateLocal(item.date),
           type: 'รายจ่าย',
           category: store.state.pockets.find(p => p._id === item.pocketId)?.name || 'ไม่ระบุ',
           description: item.description,
-          amount: Number(item.amount).toLocaleString('th-TH')
+          amount: formatAmountLocal(item.amount)
         }))
       }
 
@@ -566,7 +561,7 @@ export default {
         const summaryRows = [
           ['รายงานรายรับรายจ่าย', '', '', '', ''],
           [`เดือน: ${months[selectedMonth.value]}`, '', '', '', ''],
-          [`ปี: ${selectedYear.value + 543}`, '', '', '', ''],
+          [`ปี: ${selectedYear.value}`, '', '', '', ''],
           ['รวมรายรับ', formatAmount(totalIncome.value), '', '', ''],
           ['รวมรายจ่าย', formatAmount(totalExpenses.value), '', '', ''],
           ['คงเหลือ', formatAmount(balance.value), '', '', ''],
@@ -591,11 +586,11 @@ export default {
 
         // ปรับแต่งความกว้างคอลัมน์
         const wscols = [
-          { wch: 12 }, // วันที่
-          { wch: 10 }, // ประเภท
-          { wch: 15 }, // หมวดหมู่
-          { wch: 30 }, // รายละเอียด
-          { wch: 12 }  // จำนวนเงิน
+          { wch: 12 },
+          { wch: 10 },
+          { wch: 15 },
+          { wch: 30 },
+          { wch: 12 }
         ]
         ws['!cols'] = wscols
 
@@ -603,7 +598,7 @@ export default {
         XLSX.utils.book_append_sheet(wb, ws, 'รายงาน')
 
         // บันทึกไฟล์
-        XLSX.writeFile(wb, `รายงานรายรับรายจ่ายเดือน_${months[selectedMonth.value]}_${selectedYear.value + 543}.xlsx`)
+        XLSX.writeFile(wb, `รายงานรายรับรายจ่ายเดือน_${months[selectedMonth.value]}_${selectedYear.value}.xlsx`)
       } catch (error) {
         console.error('Excel Export Error:', error)
         Swal.fire({
@@ -641,9 +636,7 @@ export default {
       if (expenseChart.value?._chart) expenseChart.value._chart.destroy()
     })
 
-    const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('th-TH')
-    }
+    const formatDate = (date) => formatDateLocal(date)
 
     const getPocketName = (pocketId, type) => {
       const pockets = type === 'income' ? store.getters.incomePockets : store.getters.expensePockets

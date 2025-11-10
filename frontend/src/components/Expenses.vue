@@ -106,7 +106,7 @@
                         {{ getPocketName(entry.pocketId) }}
                       </span>
                     </td>
-                    <td class="text-danger text-end">{{ formatAmount(entry.amount) }} ฿</td>
+                    <td class="text-danger text-end">{{ formatAmount(entry.amount) }}</td>
                     <td class="text-end" v-if="!isSelectMode">
                       <div class="btn-group btn-group-sm">
                         <button class="btn btn-outline-secondary btn-sm" @click="editTransaction(entry)">
@@ -192,6 +192,7 @@ import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
 import EditTransaction from './shared/EditTransaction.vue'
 import Swal from 'sweetalert2'
+import { formatDateLocal, formatCurrencyLocal } from '../utils/format'
 
 export default {
   components: {
@@ -211,11 +212,7 @@ export default {
       direction: 'desc' // default newest first
     })
 
-    const sortedExpenses = computed(() => {
-      return [...store.state.expenses].sort((a, b) =>
-        new Date(b.date) - new Date(a.date)
-      )
-    })
+    // Removed unused sortedExpenses
 
     const filteredExpenses = computed(() => {
       if (!selectedDate.value) return store.state.expenses
@@ -229,15 +226,7 @@ export default {
       })
     })
 
-    const filteredAndPaginatedExpenses = computed(() => {
-      return sortedExpenses.value
-        .filter(entry => {
-          if (!selectedDate.value) return true
-          const entryDate = new Date(entry.date)
-          return entryDate.toDateString() === selectedDate.value.toDateString()
-        })
-        .slice(startIndex.value, endIndex.value)
-    })
+    // Removed unused filteredAndPaginatedExpenses
 
     const selectedDateTotal = computed(() => {
       return filteredExpenses.value
@@ -293,17 +282,9 @@ export default {
       }
     }
 
-    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    }
+    const formatDate = (dateString) => formatDateLocal(dateString)
 
-    const formatAmount = (amount) => {
-      return Number(amount).toLocaleString('th-TH')
-    }
+  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
 
     const deleteTransaction = async (transaction) => {
       const result = await Swal.fire({
@@ -473,10 +454,8 @@ export default {
       changePage,
       formatDate,
       formatAmount,
-      sortedExpenses,
       selectedDate,
       filteredExpenses,
-      filteredAndPaginatedExpenses,
       paginatedData,
       showAddForm,
       handleTransactionAdded,
