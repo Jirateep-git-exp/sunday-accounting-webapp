@@ -12,8 +12,8 @@ const catalog = [
     synonyms: ['โบนัส', 'bonus']
   },
   {
-    id: 'side-income', type: 'income', nameTh: 'รายได้พิเศษ', nameEn: 'Side income', icon: 'fa-solid fa-piggy-bank',
-    synonyms: ['รายได้พิเศษ', 'รับจ้าง', 'freelance', 'extra income']
+    id: 'side-income', type: 'income', nameTh: 'รายได้เสริม', nameEn: 'Side income', icon: 'fa-solid fa-piggy-bank',
+    synonyms: ['รายได้เสริม', 'รับจ้าง', 'freelance', 'extra income']
   },
   {
     id: 'interest', type: 'income', nameTh: 'ดอกเบี้ย', nameEn: 'Interest', icon: 'fa-solid fa-building-columns',

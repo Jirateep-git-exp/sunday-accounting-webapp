@@ -4,13 +4,14 @@ const Income = require('../models/Income');
 const Expense = require('../models/Expense');
 
 const catalog = require('../utils/pocketCatalog');
-// เลือกชุดหมวดหมู่พื้นฐานสำหรับผู้ใช้ใหม่ (ภาษาไทย)
+// เลือกชุดหมวดหมู่พื้นฐานสำหรับผู้ใช้ใหม่
+// ใช้ id จาก catalog เพื่อความแม่นยำกับข้อมูลจริง
 const defaultPockets = catalog
   .filter(c => [
     // รายรับที่จำเป็น
-    'เงินเดือน','โบนัส','รายได้เสริม',
+    'salary', 'bonus', 'side-income',
     // รายจ่ายที่จำเป็น
-    'อาหาร','ของใช้','การเดินทาง','ที่พัก','โทรศัพท์-อินเทอร์เน็ต','ค่าสาธารณูปโภค','อื่นๆ'
+    'food', 'groceries', 'transport', 'housing', 'phone-internet', 'utilities', 'others'
   ].includes(c.id))
   .map(c => ({ name: c.nameTh, type: c.type, icon: c.icon }));
 
@@ -101,13 +102,17 @@ exports.bulkCreate = async (req, res) => {
     if (!payload.length) return res.status(400).json({ error: 'ไม่ได้ส่งรายการหมวดหมู่เข้ามา' })
 
     const user = await User.findById(req.user._id)
-    const docs = payload.map(p => ({
-      name: p.name && String(p.name).trim() ? String(p.name).trim() : 'ไม่ระบุชื่อ',
-      type: p.type,
-      icon: p.icon || (catalog.find(c => c.id === p.id)?.icon) || 'fa-solid fa-folder',
-      userId: req.user._id,
-      createdByEmail: user.email || `lineuser-${user._id}`
-    }))
+    const docs = payload.map(p => {
+      const name = p.name && String(p.name).trim() ? String(p.name).trim() : 'ไม่ระบุชื่อ'
+      const matched = catalog.find(c => c.id === p.id || c.nameTh === name || c.nameEn === name)
+      return {
+        name,
+        type: p.type,
+        icon: p.icon || matched?.icon || 'fa-solid fa-folder',
+        userId: req.user._id,
+        createdByEmail: user.email || `lineuser-${user._id}`
+      }
+    })
 
     const inserted = await Pocket.insertMany(docs)
     res.status(201).json(inserted)
