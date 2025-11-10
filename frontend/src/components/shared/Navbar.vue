@@ -85,6 +85,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'Navbar',
@@ -115,9 +116,29 @@ export default {
     }
 
     const handleLogout = async () => {
-      await store.dispatch('logout')
-      router.push('/login')
+      // Close menu first
       isMenuOpen.value = false
+
+      const result = await Swal.fire({
+        title: 'ออกจากระบบ',
+        text: 'คุณแน่ใจหรือไม่ที่จะออกจากระบบ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'ออกจากระบบ',
+        cancelButtonText: 'ยกเลิก'
+      })
+
+      if (!result.isConfirmed) return
+
+      try {
+        await store.dispatch('logout')
+        await Swal.fire('สำเร็จ', 'ออกจากระบบเรียบร้อยแล้ว', 'success')
+        router.push('/login')
+      } catch (error) {
+        console.error('Logout error:', error)
+        Swal.fire('ผิดพลาด', 'ไม่สามารถออกจากระบบได้', 'error')
+      }
     }
 
     onMounted(() => {

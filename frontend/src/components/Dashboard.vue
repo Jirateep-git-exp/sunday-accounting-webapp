@@ -187,12 +187,14 @@ export default {
 
     // Random Greetings Array
     const greetings = [
-      "สวัสดี",
-      "ยินดีต้อนรับกลับ",
-      "สวัสดีค่ะ",
-      "สวัสดีครับ",
-      "ขอให้เป็นวันที่ดี",
-      "ดีใจที่ได้พบกันอีก"
+      "Good day",
+      "Welcome back",
+      "Hello",
+      "Hi there",
+      "Have a great day",
+      "Glad to see you",
+      "Greetings"
+
     ]
 
     // Random Greeting
@@ -204,8 +206,8 @@ export default {
     // Current Day
     const currentDay = computed(() => {
       const days = [
-        'วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ',
-        'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'
+        'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+        'Thursday', 'Friday', 'Saturday'
       ]
       const today = new Date()
       return days[today.getDay()]

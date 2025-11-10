@@ -9,10 +9,10 @@
             <label class="form-label">ชื่อผู้ใช้</label>
             <input class="form-control" v-model="username" />
           </div>
-          <div class="col-md-6">
+          <!-- <div class="col-md-6">
             <label class="form-label">Avatar URL</label>
             <input class="form-control" v-model="avatar" />
-          </div>
+          </div> -->
         </div>
         <button class="btn btn-primary mt-3" @click="saveProfile" :disabled="saving">
           {{ saving ? 'กำลังบันทึก...' : 'บันทึกโปรไฟล์' }}
@@ -93,13 +93,38 @@ export default {
     }
 
     const linkWithLine = async () => {
-      const token = localStorage.getItem('token')
-      const { data } = await axios.post(`${API_URL}/auth/line/link-state`, {}, { headers: { Authorization: `Bearer ${token}` } })
-      const state = encodeURIComponent(data.state)
-      const clientId = import.meta.env.VITE_LINE_CHANNEL_ID
-      const redirectUri = encodeURIComponent(import.meta.env.VITE_LINE_REDIRECT_URI)
-      const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid%20email`
-      window.location.href = lineLoginUrl
+      const result = await Swal.fire({
+        icon: 'info',
+        title: 'ท่านกำลังเข้าสู่การเชื่อม LINE',
+        text: 'หลังจากเชื่อมแล้ว ระบบ LINE OA จะสามารถบันทึกข้อมูลเข้าบัญชีนี้ได้',
+        showCancelButton: true,
+        confirmButtonText: 'เชื่อมกับ LINE',
+        cancelButtonText: 'กลับ',
+        confirmButtonColor: '#3085d6'
+      })
+      if (!result.isConfirmed) {
+        // ให้ผู้ใช้ทราบว่าการเชื่อมถูกยกเลิก
+        await Swal.fire({ icon: 'error', title: 'ยกเลิกการเชื่อม LINE', text: 'ยังไม่ได้เชื่อมบัญชี LINE' })
+        return
+      }
+
+      try {
+        saving.value = true
+        const token = localStorage.getItem('token')
+        const { data } = await axios.post(`${API_URL}/auth/line/link-state`, {}, { headers: { Authorization: `Bearer ${token}` } })
+        const state = encodeURIComponent(data.state)
+        const clientId = import.meta.env.VITE_LINE_CHANNEL_ID
+        const redirectUri = encodeURIComponent(import.meta.env.VITE_LINE_REDIRECT_URI)
+        const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid%20email`
+        // แจ้งผู้ใช้สั้นๆ ก่อนนำทางไปยัง LINE (ไม่แสดง success ที่นี่)
+        await Swal.fire({ icon: 'info', title: 'ไปยัง LINE เพื่อยืนยันการเชื่อมบัญชี', timer: 900, showConfirmButton: false })
+        // เปลี่ยนหน้าไปยัง LINE OAuth — เมื่อกระบวนการเสร็จ ระบบจะกลับมาที่ /login-success ซึ่งจะจัดการผลลัพธ์ (linked / error)
+        window.location.href = lineLoginUrl
+      } catch (e) {
+        await Swal.fire({ icon: 'error', title: 'ไม่สามารถเชื่อม Line ได้', text: e.response?.data?.error || 'เกิดข้อผิดพลาด' })
+      } finally {
+        saving.value = false
+      }
     }
 
     const unlinkLine = async () => {
