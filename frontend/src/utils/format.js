@@ -1,20 +1,15 @@
-// Shared formatting utilities using the device/runtime locale
+// Shared formatting utilities (Thai-first)
 // Keep tiny and dependency-free.
 
 // Resolve a best-effort locale from the environment (browser or Node)
 export function getLocale() {
   try {
-    if (typeof Intl !== 'undefined') {
-      const opts = Intl.DateTimeFormat().resolvedOptions?.()
-      if (opts?.locale) return opts.locale
-    }
-    if (typeof navigator !== 'undefined' && navigator.language) {
-      return navigator.language
-    }
+    // Force Thai as default for this project phase
+    return 'th-TH'
   } catch (e) {
     // ignore and fallback
   }
-  return 'en-US'
+  return 'th-TH'
 }
 
 // Format a date into a human-readable string in local timezone and locale
@@ -23,10 +18,10 @@ export function formatDateLocal(value, options = { year: 'numeric', month: 'long
   const date = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(date.getTime())) return ''
   try {
-    return date.toLocaleDateString(undefined, options)
+    return date.toLocaleDateString('th-TH', options)
   } catch {
-    // Fallback to en-US
-    return date.toLocaleDateString('en-US', options)
+    // Fallback to Thai locale string
+    return date.toLocaleDateString('th-TH', options)
   }
 }
 
@@ -35,25 +30,44 @@ export function formatAmountLocal(amount, maximumFractionDigits = 2) {
   const num = Number(amount)
   if (!Number.isFinite(num)) return '0'
   try {
-    return num.toLocaleString(undefined, { maximumFractionDigits })
+    return num.toLocaleString('th-TH', { maximumFractionDigits })
   } catch {
-    return num.toLocaleString('en-US', { maximumFractionDigits })
+    return num.toLocaleString('th-TH', { maximumFractionDigits })
   }
 }
 
 // Optional: format with currency symbol if a currency code is provided
-export function formatCurrencyLocal(amount, currency = 'USD') {
+export function formatCurrencyLocal(amount, currency = 'THB') {
   const num = Number(amount)
   if (!Number.isFinite(num)) return '0'
   try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(num)
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency }).format(num)
   } catch {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(num)
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency }).format(num)
   }
 }
 
 // Legacy alias to reduce breakage in older components
-// Use formatCurrencyLocal under the hood, defaulting to USD
-export function formatAmount(amount, currency = 'USD') {
-  return formatCurrencyLocal(amount, currency)
+// IMPORTANT: For Thai-only phase, keep this as number without currency symbol
+export function formatAmount(amount, maximumFractionDigits = 2) {
+  return formatAmountLocal(amount, maximumFractionDigits)
+}
+
+// Canonical THB formatter with symbol using Thai locale
+export function formatBaht(amount, maximumFractionDigits = 2) {
+  const num = Number(amount)
+  if (!Number.isFinite(num)) return '฿0'
+  try {
+    return new Intl.NumberFormat('th-TH', {
+      style: 'currency',
+      currency: 'THB',
+      maximumFractionDigits
+    }).format(num)
+  } catch {
+    return new Intl.NumberFormat('th-TH', {
+      style: 'currency',
+      currency: 'THB',
+      maximumFractionDigits
+    }).format(num)
+  }
 }

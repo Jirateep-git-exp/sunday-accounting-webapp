@@ -127,7 +127,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
 import Swal from 'sweetalert2'
-import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
+import { formatBaht, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'Dashboard',
@@ -181,18 +181,18 @@ export default {
         .slice(0, 5)
     })
 
-  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
+  const formatAmount = (amount) => formatBaht(amount)
 
     const formatDate = (date) => formatDateLocal(date)
 
     // Random Greetings Array
     const greetings = [
-      "Good day",
-      "Welcome back",
-      "Hello",
-      "Hi there",
-      "Greetings",
-      "Nice to see you"
+      "สวัสดี",
+      "ยินดีต้อนรับกลับ",
+      "สวัสดีค่ะ",
+      "สวัสดีครับ",
+      "ขอให้เป็นวันที่ดี",
+      "ดีใจที่ได้พบกันอีก"
     ]
 
     // Random Greeting
@@ -204,8 +204,8 @@ export default {
     // Current Day
     const currentDay = computed(() => {
       const days = [
-        'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-        'Thursday', 'Friday', 'Saturday'
+        'วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ',
+        'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'
       ]
       const today = new Date()
       return days[today.getDay()]

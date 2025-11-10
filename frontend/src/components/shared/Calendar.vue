@@ -9,7 +9,7 @@
       <div class="date-selector" @click="toggleDropdown">
         <div class="current-period">
           <h5 class="month-title">{{ months[selectedMonth] }}</h5>
-          <span class="year-title">{{ selectedYear }}</span>
+          <span class="year-title">{{ selectedYear + 543 }}</span>
         </div>
         <i class="bi bi-chevron-down dropdown-icon" :class="{ 'rotated': showDropdown }"></i>
       </div>
@@ -48,7 +48,7 @@
                         :key="year"
                         :class="['year-btn', { active: selectedYear === year }]"
                         @click.stop="selectYear(year)">
-                  {{ year }}
+                  {{ year + 543 }}
                 </button>
               </div>
             </div>
@@ -108,7 +108,7 @@
 <script>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
-import { formatCurrencyLocal } from '../../utils/format'
+import { formatBaht } from '../../utils/format'
 
 export default {
   name: 'Calendar',
@@ -128,12 +128,12 @@ export default {
     
     // Month names generated from locale
     const months = Array.from({ length: 12 }, (_, i) =>
-      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+      new Date(2000, i, 1).toLocaleString('th-TH', { month: 'long' })
     )
     
     // Weekday headers (short, starting Sunday) from locale
     const weekDays = Array.from({ length: 7 }, (_, i) =>
-      new Date(2000, 0, 2 + i).toLocaleDateString(undefined, { weekday: 'short' })
+      new Date(2000, 0, 2 + i).toLocaleDateString('th-TH', { weekday: 'short' })
     )
     
     // สร้างช่วงปีย้อนหลัง 5 ปี และล่วงหน้า 5 ปี
@@ -357,7 +357,7 @@ export default {
       document.removeEventListener('click', handleClickOutside, true)
     })
 
-    const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
+  const formatAmount = (amount) => formatBaht(amount)
 
     return {
       // Calendar data
@@ -469,7 +469,7 @@ export default {
 
 .date-selector:hover {
   background: #edf2f7;
-  border-color: #6366f1;
+  border-color: var(--primary-calendar-color);
 }
 
 .current-period {
@@ -501,7 +501,7 @@ export default {
 
 .dropdown-icon.rotated {
   transform: rotate(180deg);
-  color: #6366f1;
+  color: var(--primary-calendar-color);
 }
 
 /* Dropdown Styles */
@@ -601,14 +601,14 @@ export default {
 
 .month-btn:hover, .year-btn:hover {
   background: #edf2f7;
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: var(--primary-calendar-color);
+  color: var(--primary-calendar-color);
 }
 
 .month-btn.active, .year-btn.active {
-  background: #6366f1;
+  background: var(--primary-calendar-color);
   color: white;
-  border-color: #6366f1;
+  border-color: var(--primary-calendar-color);
 }
 
 /* Calendar Grid */
@@ -627,7 +627,7 @@ export default {
   text-align: center;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #718096;
+  color: var(--text-light);
   padding: 0.5rem 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -648,14 +648,15 @@ export default {
   border-radius: 8px;
   position: relative;
   transition: all 0.2s ease;
-  background: #fafafa;
+  background: transparent;
   border: 1px solid transparent;
   min-height: 40px;
+  font-size: 0.9rem;
 }
 
 .day-cell:hover:not(.outside-month):not(.disabled) {
-  background: #edf2f7;
-  border-color: #6366f1;
+  background: rgba(108, 92, 231, 0.1);
+  transform: scale(1.05);
 }
 
 .day-content {
@@ -676,48 +677,41 @@ export default {
 }
 
 .outside-month {
-  opacity: 0.3;
   background: transparent;
 }
 
 .outside-month .date-number {
-  color: #a0aec0;
+  color: #cbd5e1;
 }
 
 .selected {
-  background: #6366f1 !important;
+  background: linear-gradient(135deg, var(--primary-calendar-color) 100%) !important;
   color: white !important;
   font-weight: 600;
-  border-color: #6366f1 !important;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  border-color: transparent !important;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15);
 }
 
 .selected .date-number {
   color: white;
 }
 
-.today {
-  background: #10b981;
-  color: white;
-  border-color: #10b981;
+.today:not(.selected) {
+  background: rgba(34, 197, 94, 0.1);
+  color: #059669;
 }
 
 .today .date-number {
-  color: white;
+  color: inherit;
   font-weight: 600;
 }
 
 .today.selected {
-  background: #6366f1 !important;
-}
-
-.weekend:not(.selected):not(.today) {
-  background: #fef7f0;
-  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary-calendar-color) 100%) !important;
 }
 
 .weekend:not(.selected):not(.today) .date-number {
-  color: #f56500;
+  color: #dc2626;
 }
 
 .has-transactions {
@@ -783,8 +777,8 @@ export default {
 
 .today-btn:hover {
   background: #edf2f7;
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: var(--primary-calendar-color);
+  color: var(--primary-calendar-color);
 }
 
 /* Calendar Day Transitions */

@@ -46,7 +46,7 @@
 
         <router-link to="/cloudpocket" class="nav-item" active-class="active" @click="isMenuOpen = false">
           <i class="nav-icon fas fa-cloud"></i>
-          <span class="nav-label">Cloud Pocket</span>
+          <span class="nav-label">หมวดหมู่</span>
         </router-link>
 
         <router-link to="/settings" class="nav-item" active-class="active" @click="isMenuOpen = false">
@@ -99,7 +99,7 @@ export default {
       { path: '/', label: 'หน้าหลัก', icon: 'bi bi-house' },
       { path: '/income', label: 'รายรับ', icon: 'bi bi-graph-up-arrow' },
       { path: '/expenses', label: 'รายจ่าย', icon: 'bi bi-graph-down-arrow' },
-      { path: '/cloudpocket', label: 'Category', icon: 'bi bi-folder' },
+      { path: '/cloudpocket', label: 'หมวดหมู่', icon: 'bi bi-folder' },
       { path: '/analyze', label: 'วิเคราะห์', icon: 'bi bi-bar-chart' }
     ]
 

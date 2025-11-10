@@ -4,13 +4,15 @@ const Income = require('../models/Income');
 const Expense = require('../models/Expense');
 
 const catalog = require('../utils/pocketCatalog');
-// pick a subset of essentials for first-time users
-const defaultPockets = catalog.filter(c => [
-  // income essentials
-  'salary','bonus','side-income',
-  // expense essentials
-  'food','groceries','transport','housing','phone-internet','utilities','others'
-].includes(c.id)).map(c => ({ name: c.nameEn, type: c.type, icon: c.icon }));
+// เลือกชุดหมวดหมู่พื้นฐานสำหรับผู้ใช้ใหม่ (ภาษาไทย)
+const defaultPockets = catalog
+  .filter(c => [
+    // รายรับที่จำเป็น
+    'เงินเดือน','โบนัส','รายได้เสริม',
+    // รายจ่ายที่จำเป็น
+    'อาหาร','ของใช้','การเดินทาง','ที่พัก','โทรศัพท์-อินเทอร์เน็ต','ค่าสาธารณูปโภค','อื่นๆ'
+  ].includes(c.id))
+  .map(c => ({ name: c.nameTh, type: c.type, icon: c.icon }));
 
 exports.createPocket = async (req, res) => {
   try {
@@ -45,7 +47,7 @@ exports.getPockets = async (req, res) => {
 
     res.json(pockets);
   } catch (error) {
-    console.error('GET POCKETS ERROR:', error);
+    console.error('ข้อผิดพลาดในการดึงรายชื่อหมวดหมู่:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -60,7 +62,7 @@ exports.updatePocket = async (req, res) => {
       { new: true }
     );
     if (!pocket) {
-      return res.status(404).json({ error: 'Pocket not found' });
+      return res.status(404).json({ error: 'ไม่พบหมวดหมู่' });
     }
     res.json(pocket);
   } catch (error) {
@@ -73,14 +75,14 @@ exports.deletePocket = async (req, res) => {
     const { id } = req.params;
     const pocket = await Pocket.findOneAndDelete({ _id: id, userId: req.user._id });
     if (!pocket) {
-      return res.status(404).json({ error: 'Pocket not found' });
+      return res.status(404).json({ error: 'ไม่พบหมวดหมู่' });
     }
     // Cascade delete related transactions for this user and pocket
     await Promise.all([
       Income.deleteMany({ userId: req.user._id, pocketId: id }),
       Expense.deleteMany({ userId: req.user._id, pocketId: id })
     ])
-    res.json({ message: 'Pocket and related transactions deleted successfully' });
+    res.json({ message: 'ลบหมวดหมู่และรายการที่เกี่ยวข้องเรียบร้อยแล้ว' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -96,11 +98,11 @@ exports.getDefaultPresets = async (_req, res) => {
 exports.bulkCreate = async (req, res) => {
   try {
     const payload = Array.isArray(req.body?.pockets) ? req.body.pockets : []
-    if (!payload.length) return res.status(400).json({ error: 'No pockets provided' })
+    if (!payload.length) return res.status(400).json({ error: 'ไม่ได้ส่งรายการหมวดหมู่เข้ามา' })
 
     const user = await User.findById(req.user._id)
     const docs = payload.map(p => ({
-      name: p.name && String(p.name).trim() ? String(p.name).trim() : 'Unnamed',
+      name: p.name && String(p.name).trim() ? String(p.name).trim() : 'ไม่ระบุชื่อ',
       type: p.type,
       icon: p.icon || (catalog.find(c => c.id === p.id)?.icon) || 'fa-solid fa-folder',
       userId: req.user._id,
@@ -110,7 +112,7 @@ exports.bulkCreate = async (req, res) => {
     const inserted = await Pocket.insertMany(docs)
     res.status(201).json(inserted)
   } catch (e) {
-    console.error('bulkCreate error:', e)
+    console.error('เกิดข้อผิดพลาดในการสร้างหมวดหมู่แบบหลายรายการ:', e)
     res.status(500).json({ error: e.message })
   }
 }

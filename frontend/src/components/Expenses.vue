@@ -48,15 +48,15 @@
                 <h5 class="card-title">สรุปรายจ่าย</h5>
                 <div class="summary-item">
                   <span>วันที่เลือก</span>
-                  <span class="amount">{{ formatAmount(selectedDateTotal) }} ฿</span>
+                  <span class="amount">{{ formatAmount(selectedDateTotal) }}</span>
                 </div>
                 <div class="summary-item">
                   <span>เดือนนี้</span>
-                  <span class="amount">{{ formatAmount(currentMonthTotal) }} ฿</span>
+                  <span class="amount">{{ formatAmount(currentMonthTotal) }}</span>
                 </div>
                 <div class="summary-item">
                   <span>ทั้งหมด</span>
-                  <span class="amount">{{ formatAmount(totalExpenses) }} ฿</span>
+                  <span class="amount">{{ formatAmount(totalExpenses) }}</span>
                 </div>
               </div>
             </div>
@@ -192,7 +192,7 @@ import { useStore } from 'vuex'
 import Calendar from './shared/Calendar.vue'
 import EditTransaction from './shared/EditTransaction.vue'
 import Swal from 'sweetalert2'
-import { formatDateLocal, formatCurrencyLocal } from '../utils/format'
+import { formatDateLocal, formatBaht } from '../utils/format'
 
 export default {
   components: {
@@ -284,7 +284,7 @@ export default {
 
     const formatDate = (dateString) => formatDateLocal(dateString)
 
-  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
+  const formatAmount = (amount) => formatBaht(amount)
 
     const deleteTransaction = async (transaction) => {
       const result = await Swal.fire({

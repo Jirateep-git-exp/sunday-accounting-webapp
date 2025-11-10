@@ -54,6 +54,10 @@ const routes = [
     path: '/transaction',
     name: 'Transaction',
     component: Transaction,
+    // Provide required prop selectedDate with current date or from query
+    props: (route) => ({
+      selectedDate: route.query.date ? new Date(route.query.date) : new Date()
+    }),
     meta: { requiresAuth: true }
   },
   {

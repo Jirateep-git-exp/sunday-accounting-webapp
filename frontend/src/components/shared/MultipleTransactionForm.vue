@@ -112,7 +112,7 @@
                           <i class="fa-solid fa-chevron-left"></i>
                         </button>
                         <div class="period-display">
-                          <div class="month-name">{{ thaiMonths[currentMonth] }}</div>
+                          <div class="month-name">{{ monthNames[currentMonth] }}</div>
                           <div class="year-name">{{ currentYear + 543 }}</div>
                         </div>
                         <button type="button" class="nav-button" @click="nextMonth">
@@ -287,7 +287,7 @@
                         </button>
                         <div class="period-display">
                           <div class="month-name">{{ monthNames[currentMonth] }}</div>
-                          <div class="year-name">{{ currentYear }}</div>
+                          <div class="year-name">{{ currentYear + 543 }}</div>
                         </div>
                         <button type="button" class="nav-button" @click="nextMonth">
                           <i class="fa-solid fa-chevron-right"></i>
@@ -396,25 +396,25 @@
           <div v-if="selectedTypes.includes('income')" class="summary-item">
             <span class="label">รายรับ:</span>
             <span class="value text-success">
-              {{ validIncomeTransactions.length }} รายการ | {{ formatCurrencyLocal(totalIncomeAmount, 'USD') }}
+              {{ validIncomeTransactions.length }} รายการ | {{ formatBaht(totalIncomeAmount) }}
             </span>
           </div>
           <div v-if="selectedTypes.includes('expense')" class="summary-item">
             <span class="label">รายจ่าย:</span>
             <span class="value text-danger">
-              {{ validExpenseTransactions.length }} รายการ | {{ formatCurrencyLocal(totalExpenseAmount, 'USD') }}
+              {{ validExpenseTransactions.length }} รายการ | {{ formatBaht(totalExpenseAmount) }}
             </span>
           </div>
           <div class="summary-item summary-total">
             <span class="label">รวมทั้งหมด:</span>
             <span class="value total-amount">
-              {{ validTransactions.length }} รายการ | {{ formatCurrencyLocal(netAmount, 'USD') }}
+              {{ validTransactions.length }} รายการ | {{ formatBaht(netAmount) }}
             </span>
           </div>
           <div v-if="netAmount !== 0" class="net-result">
             <span class="net-label">ผลต่าง:</span>
             <span class="net-value" :class="netAmount > 0 ? 'text-success' : 'text-danger'">
-              {{ netAmount > 0 ? '+' : '' }}{{ formatCurrencyLocal(netAmount, 'USD') }}
+              {{ netAmount > 0 ? '+' : '' }}{{ formatBaht(netAmount) }}
               ({{ netAmount > 0 ? 'กำไร' : 'ขาดทุน' }})
             </span>
           </div>
@@ -441,7 +441,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import Swal from 'sweetalert2'
-import { formatDateLocal, formatCurrencyLocal } from '@/utils/format'
+import { formatDateLocal, formatBaht } from '@/utils/format'
 
 export default {
   props: {
@@ -467,11 +467,11 @@ export default {
     
     // Localized month and weekday names
     const monthNames = Array.from({ length: 12 }, (_, i) =>
-      new Date(2000, i, 1).toLocaleDateString(undefined, { month: 'long' })
+      new Date(2000, i, 1).toLocaleDateString('th-TH', { month: 'long' })
     )
     // Start from a known Sunday (Aug 1, 2021)
     const weekDays = Array.from({ length: 7 }, (_, i) =>
-      new Date(Date.UTC(2021, 7, 1 + i)).toLocaleDateString(undefined, { weekday: 'short' })
+      new Date(Date.UTC(2021, 7, 1 + i)).toLocaleDateString('th-TH', { weekday: 'short' })
     )
 
     // Computed properties
@@ -902,8 +902,8 @@ export default {
       canSubmit,
       calendarDays,
       
-      // Methods
-      formatCurrencyLocal,
+  // Methods
+  formatBaht,
       formatDisplayDate,
       toggleTransactionType,
       addTransaction,
@@ -952,7 +952,7 @@ export default {
   color: var(--text-color);
   font-weight: 700;
   font-size: 1.5rem;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-color) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1055,7 +1055,7 @@ export default {
 }
 
 .item-number {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-color) 100%);
   color: white;
   width: 32px;
   height: 32px;
@@ -1142,7 +1142,7 @@ export default {
   padding: 1rem 2rem;
   font-weight: 600;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-color) 100%);
   border: none;
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -1226,15 +1226,6 @@ export default {
   }
 }
 
-/* CSS Variables */
-:root {
-  --primary-color: #6366f1;
-  --text-color: #1a202c;
-  --text-light: #718096;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-}
-
 /* Transaction Type Selection */
 .transaction-type-buttons {
   display: flex;
@@ -1264,7 +1255,7 @@ export default {
 }
 
 .transaction-type-btn.active {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-color) 100%);
   border-color: var(--primary-color);
   color: white;
   box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
@@ -1448,7 +1439,7 @@ export default {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-color) 100%);
   border-radius: 10px;
   color: white;
   font-size: 1.1rem;
@@ -1510,7 +1501,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-calendar-color) 100%);
   color: white;
   position: relative;
 }
@@ -1619,8 +1610,9 @@ export default {
 }
 
 .day-cell.selected {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #8b7cf8 100%);
+  background: linear-gradient(135deg, var(--primary-calendar-color) 100%);
   color: white;
+  /* color: var(--primary-calendar-color); */
   font-weight: 600;
 }
 

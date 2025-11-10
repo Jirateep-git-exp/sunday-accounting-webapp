@@ -53,13 +53,13 @@
                     <div class="row g-3">
                       <div class="col-12 col-md-6">
                         <div class="card p-3">
-                          <h6 class="mb-2">{{ months[compareMonth1] }} {{ compareYear1 }}</h6>
+                          <h6 class="mb-2">{{ months[compareMonth1] }} {{ compareYear1 + 543 }}</h6>
                           <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth1, compareYear1)) }}</div>
                         </div>
                       </div>
                       <div class="col-12 col-md-6">
                         <div class="card p-3">
-                          <h6 class="mb-2">{{ months[compareMonth2] }} {{ compareYear2 }}</h6>
+                          <h6 class="mb-2">{{ months[compareMonth2] }} {{ compareYear2 + 543 }}</h6>
                           <div class="fs-4 text-danger">{{ formatAmount(expenseTotalMonth(compareMonth2, compareYear2)) }}</div>
                         </div>
                       </div>
@@ -69,13 +69,13 @@
                         v-if="expenseTotalMonth(compareMonth1, compareYear1) > expenseTotalMonth(compareMonth2, compareYear2)"
                         class="text-success">
                         เดือนที่ 1 มีรายจ่ายมากกว่าเดือนที่ 2 {{ formatAmount(expenseTotalMonth(compareMonth1,
-                          compareYear1) - expenseTotalMonth(compareMonth2, compareYear2)) }} ฿
+                          compareYear1) - expenseTotalMonth(compareMonth2, compareYear2)) }}
                       </span>
                       <span
                         v-else-if="expenseTotalMonth(compareMonth1, compareYear1) < expenseTotalMonth(compareMonth2, compareYear2)"
                         class="text-danger">
                         เดือนที่ 2 มีรายจ่ายมากกว่าเดือนที่ 1 {{ formatAmount(expenseTotalMonth(compareMonth2,
-                          compareYear2) - expenseTotalMonth(compareMonth1, compareYear1)) }} ฿
+                          compareYear2) - expenseTotalMonth(compareMonth1, compareYear1)) }}
                       </span>
                       <span v-else class="text-muted">รายจ่ายเท่ากันทั้งสองเดือน</span>
                     </div>
@@ -323,7 +323,7 @@ import { useStore } from 'vuex'
 import Chart from 'chart.js/auto'
 import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
-import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
+import { formatBaht, formatAmountLocal, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'Analyze',
@@ -344,7 +344,7 @@ export default {
     const compareYear2 = ref(new Date().getFullYear())
 
     const months = Array.from({ length: 12 }, (_, i) =>
-      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+      new Date(2000, i, 1).toLocaleString('th-TH', { month: 'long' })
     )
 
     const currentYear = new Date().getFullYear()
@@ -424,7 +424,8 @@ export default {
     })
 
     // Methods
-  const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
+  // ใช้รูปแบบสกุลเงินบาทพร้อมสัญลักษณ์สำหรับการแสดงผลใน UI
+  const formatAmount = (amount) => formatBaht(amount)
 
     const createChart = (canvas, data, type) => {
       // Pastel colors for income
@@ -561,7 +562,7 @@ export default {
         const summaryRows = [
           ['รายงานรายรับรายจ่าย', '', '', '', ''],
           [`เดือน: ${months[selectedMonth.value]}`, '', '', '', ''],
-          [`ปี: ${selectedYear.value}`, '', '', '', ''],
+          [`ปี: ${selectedYear.value + 543}`, '', '', '', ''],
           ['รวมรายรับ', formatAmount(totalIncome.value), '', '', ''],
           ['รวมรายจ่าย', formatAmount(totalExpenses.value), '', '', ''],
           ['คงเหลือ', formatAmount(balance.value), '', '', ''],
@@ -598,7 +599,7 @@ export default {
         XLSX.utils.book_append_sheet(wb, ws, 'รายงาน')
 
         // บันทึกไฟล์
-        XLSX.writeFile(wb, `รายงานรายรับรายจ่ายเดือน_${months[selectedMonth.value]}_${selectedYear.value}.xlsx`)
+  XLSX.writeFile(wb, `รายงานรายรับรายจ่ายเดือน_${months[selectedMonth.value]}_${selectedYear.value + 543}.xlsx`)
       } catch (error) {
         console.error('Excel Export Error:', error)
         Swal.fire({
@@ -826,7 +827,7 @@ export default {
 }
 
 .form-select:hover {
-  border-color: var(--primary-color);
+  border-color: var(--primary-calendar-color);
 }
 
 /* Summary Cards Styling */
@@ -933,8 +934,8 @@ export default {
 }
 
 .btn-outline-primary {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
+  color: var(--primary-calendar-color);
+  border-color: var(--primary-calendar-color);
 }
 
 .btn-outline-primary:disabled {

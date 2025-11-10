@@ -1,7 +1,7 @@
 <template>
   <div class="onboard">
-    <h2>Set up default Pockets</h2>
-    <p class="hint">Step {{ step === 'income' ? '1/2 Select income categories' : '2/2 Select expense categories' }}</p>
+    <h2>ตั้งค่าหมวดหมู่เริ่มต้น</h2>
+    <p class="hint">ขั้นตอน {{ step === 'income' ? '1/2 เลือกหมวดหมู่รายรับ' : '2/2 เลือกหมวดหมู่รายจ่าย' }}</p>
     <div class="grid">
         <div v-for="p in filteredPresets" :key="p.name + p.type" class="card" :class="{ selected: selectedIds.has(keyOf(p)) }" @click="toggle(p)">
           <div class="icon" v-if="p.icon"><i :class="p.icon"></i></div>
@@ -11,18 +11,18 @@
         <!-- Custom add card -->
         <div class="card add" @click="openCustomModal">
           <div class="icon"><i class="fa-solid fa-plus"></i></div>
-          <div class="name">Add custom category</div>
-          <div class="type">Define your own name</div>
+          <div class="name">เพิ่มหมวดหมู่เอง</div>
+          <div class="type">กำหนดชื่อเอง</div>
         </div>
     </div>
     <div class="actions">
       <template v-if="step === 'income'">
-        <button class="ghost" @click="back">Back</button>
-        <button class="primary" @click="next" :disabled="loading">Continue (Expenses)</button>
+        <button class="ghost" @click="back">ย้อนกลับ</button>
+        <button class="primary" @click="next" :disabled="loading">ถัดไป (รายจ่าย)</button>
       </template>
       <template v-else>
-        <button class="ghost" @click="back">Back (Income)</button>
-        <button class="primary" @click="createAll" :disabled="loading">Create all Pockets</button>
+        <button class="ghost" @click="back">ย้อนกลับ (รายรับ)</button>
+        <button class="primary" @click="createAll" :disabled="loading">สร้างหมวดหมู่ทั้งหมด</button>
       </template>
     </div>
     <p v-if="msg">{{ msg }}</p>
@@ -31,13 +31,13 @@
     <teleport to="body">
       <div v-if="showCustom" class="modal-overlay" role="dialog" aria-modal="true" @click.self="closeCustomModal">
         <div class="onboard-modal" @keydown.esc.prevent="onEsc" tabindex="-1" ref="modalRoot">
-          <h3>Add Category ({{ step === 'income' ? 'Income' : 'Expense' }})</h3>
+          <h3>เพิ่มหมวดหมู่ ({{ step === 'income' ? 'รายรับ' : 'รายจ่าย' }})</h3>
           <div class="row">
-            <input ref="customInput" v-model="customName" placeholder="e.g. Food/Rent/Salary" />
+            <input ref="customInput" v-model="customName" placeholder="เช่น อาหาร/ค่าเช่า/เงินเดือน" />
           </div>
           <div class="btns">
-            <button class="danger" @click="closeCustomModal">Cancel</button>
-            <button class="primary" @click="addCustom">Add</button>
+            <button class="danger" @click="closeCustomModal">ยกเลิก</button>
+            <button class="primary" @click="addCustom">เพิ่ม</button>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default {
     onKeydown(e) { if (e.key === 'Escape') this.closeCustomModal() },
     async addCustom() {
       const name = (this.customName || '').trim()
-      if (!name) { this.msg = 'Please enter a category name'; return }
+  if (!name) { this.msg = 'กรุณากรอกชื่อหมวดหมู่'; return }
       // Add a temporary local preset to the selection with current step type
       const type = this.step
       const temp = { name, type, icon: type === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping' }
@@ -109,17 +109,17 @@ export default {
       else this.selectedIds.add(k)
       this.selectedIds = new Set(this.selectedIds)
     },
-    async fetchPresets() {
+  async fetchPresets() {
       try {
         const token = localStorage.getItem('token')
         const { data } = await axios.get(`${this.api}/pockets/presets/default`, { headers: { Authorization: `Bearer ${token}` } })
         this.presets = data
-      } catch (e) { this.msg = 'Failed to load presets' }
+  } catch (e) { this.msg = 'ไม่สามารถโหลดรายการเริ่มต้นได้' }
     },
     next() {
       // require at least one income
       const chosen = this.presets.filter(p => p.type === 'income' && this.selectedIds.has(this.keyOf(p)))
-      if (!chosen.length) { this.msg = 'Please select at least one income category'; return }
+  if (!chosen.length) { this.msg = 'กรุณาเลือกอย่างน้อย 1 หมวดหมู่รายรับ'; return }
       this.step = 'expense'
       this.msg = ''
     },
@@ -128,15 +128,15 @@ export default {
         this.loading = true; this.msg = ''
         const token = localStorage.getItem('token')
         const chosen = this.presets.filter(p => this.selectedIds.has(this.keyOf(p)))
-        if (!chosen.length) { this.msg = 'Please select at least one category'; this.loading = false; return }
+  if (!chosen.length) { this.msg = 'กรุณาเลือกอย่างน้อย 1 หมวดหมู่'; this.loading = false; return }
         const payload = chosen.map(p => ({ type: p.type, name: p.name }))
         const { data } = await axios.post(`${this.api}/pockets/bulk`, { pockets: payload }, { headers: { Authorization: `Bearer ${token}` } })
-        this.msg = `Created ${data.length} categories successfully`
+  this.msg = `สร้างหมวดหมู่สำเร็จจำนวน ${data.length} รายการ`
         // redirect to dashboard after success (skip redirect in debug mode)
         if (this.$route.query.debug !== '1') {
           this.$router.push({ name: 'Dashboard' })
         }
-      } catch (e) { this.msg = e.response?.data?.error || 'Failed to create' }
+  } catch (e) { this.msg = e.response?.data?.error || 'สร้างไม่สำเร็จ' }
       finally { this.loading = false }
     }
     ,

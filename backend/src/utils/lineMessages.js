@@ -40,6 +40,17 @@ function formatCurrency(amount) {
   }
 }
 
+// Format THB with symbol using Thai locale
+function formatBaht(amount, maximumFractionDigits = 2) {
+  const num = Number(amount)
+  if (!Number.isFinite(num)) return '฿0'
+  try {
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits }).format(num)
+  } catch (_) {
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits }).format(num)
+  }
+}
+
 function buildHelpMessage() {
   return {
     type: 'text',
@@ -76,7 +87,7 @@ function buildConfirmFlex({ description, amount, pocketName, type, transactionId
   const sign = type === 'income' ? '+' : '-'
   const palette = type === 'income' ? THEME.income : THEME.expense
   const title = type === 'income' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย'
-  const amountText = `${sign}${formatCurrency(amount)} บาท`
+  const amountText = `${sign}${formatBaht(amount)}`
   const dateText = formatThaiDate()
   const timeText = formatThaiTime()
 
@@ -181,13 +192,13 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
               {
                 type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.softBg, cornerRadius: '10px', paddingAll: '12px', contents: [
                   { type: 'text', text: 'รายรับ', size: 'xs', color: THEME.subtext },
-                  { type: 'text', text: `+${formatCurrency(totalIncome)} บาท`, size: 'lg', weight: 'bold', color: THEME.income.accent },
+                  { type: 'text', text: `+${formatBaht(totalIncome)}`, size: 'lg', weight: 'bold', color: THEME.income.accent },
                 ]
               },
               {
                 type: 'box', layout: 'vertical', flex: 1, backgroundColor: THEME.softBg, cornerRadius: '10px', paddingAll: '12px', contents: [
                   { type: 'text', text: 'รายจ่าย', size: 'xs', color: THEME.subtext },
-                  { type: 'text', text: `-${formatCurrency(totalExpense)} บาท`, size: 'lg', weight: 'bold', color: THEME.expense.accent },
+                  { type: 'text', text: `-${formatBaht(totalExpense)}`, size: 'lg', weight: 'bold', color: THEME.expense.accent },
                 ]
               }
             ]
@@ -195,7 +206,7 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
           {
             type: 'box', layout: 'vertical', backgroundColor: THEME.softBg, cornerRadius: '12px', paddingAll: '12px', contents: [
               { type: 'text', text: 'คงเหลือ', size: 'xs', color: THEME.subtext },
-              { type: 'text', text: `${balance >= 0 ? '+' : ''}${formatCurrency(balance)} บาท`, size: 'xl', weight: 'bold', color: balance >= 0 ? THEME.income.accent : THEME.expense.accent },
+              { type: 'text', text: `${balance >= 0 ? '+' : ''}${formatBaht(balance)}`, size: 'xl', weight: 'bold', color: balance >= 0 ? THEME.income.accent : THEME.expense.accent },
             ]
           },
         ]},
@@ -212,7 +223,7 @@ function buildCancelSuccessFlex({ amount, type, pocketName, description, deleted
   const sign = type === 'income' ? '+' : '-'
   const palette = THEME.expense
   const title = 'ยกเลิกรายการ'
-  const amountText = amount != null ? `${sign}${formatCurrency(amount)} บาท` : ''
+  const amountText = amount != null ? `${sign}${formatBaht(amount)}` : ''
   const dateText = formatThaiDate(deletedAt)
   const timeText = formatThaiTime(deletedAt)
 

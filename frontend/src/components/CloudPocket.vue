@@ -3,7 +3,7 @@
     <!-- Page Header -->
     <div class="section-header mb-4">
       <div class="d-flex justify-content-between align-items-center">
-        <h2>Cloud Pocket</h2>
+  <h2>หมวดหมู่</h2>
       </div>
       <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
         <div class="period-selector d-flex align-items-center gap-3">
@@ -38,7 +38,7 @@
           </div>
           <div v-if="isLoading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
+              <span class="visually-hidden">กำลังโหลด...</span>
             </div>
             <p class="mt-2">กำลังโหลดข้อมูล...</p>
           </div>
@@ -83,7 +83,7 @@
           </div>
           <div v-if="isLoading" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
+              <span class="visually-hidden">กำลังโหลด...</span>
             </div>
             <p class="mt-2">กำลังโหลดข้อมูล...</p>
           </div>
@@ -279,7 +279,7 @@ import { ref, computed, nextTick, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
-import { formatCurrencyLocal, formatDateLocal } from '../utils/format'
+import { formatBaht, formatDateLocal } from '../utils/format'
 
 export default {
   name: 'CloudPocket',
@@ -419,7 +419,7 @@ export default {
     // Removed unused pocket totals helpers and withTotals computeds
 
     // USD currency formatter
-    const formatAmount = (amount) => formatCurrencyLocal(amount, 'USD')
+  const formatAmount = (amount) => formatBaht(amount)
 
     // กรอง pocketTransactions ตามเดือน/ปีที่เลือก
     const pocketTransactions = computed(() => {
@@ -525,14 +525,14 @@ export default {
 
           Swal.fire({
             icon: 'success',
-            title: 'Success',
-            text: 'Selected pockets deleted successfully!'
+            title: 'สำเร็จ',
+            text: 'ลบหมวดหมู่ที่เลือกเรียบร้อยแล้ว'
           })
         } catch (error) {
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: error.message || 'Failed to delete selected pockets'
+            title: 'เกิดข้อผิดพลาด',
+            text: error.message || 'ไม่สามารถลบหมวดหมู่ที่เลือกได้'
           })
         }
       }
@@ -554,14 +554,14 @@ export default {
           await store.dispatch('deletePocket', pocket._id)
           Swal.fire({
             icon: 'success',
-            title: 'Success',
-            text: 'Pocket deleted successfully!'
+            title: 'สำเร็จ',
+            text: 'ลบหมวดหมู่เรียบร้อยแล้ว'
           })
         } catch (error) {
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: error.message || 'Failed to delete pocket'
+            title: 'เกิดข้อผิดพลาด',
+            text: error.message || 'ไม่สามารถลบหมวดหมู่ได้'
           })
         }
       }
@@ -596,10 +596,10 @@ export default {
           id: editingPocket.value._id,
           data: { name, icon: editingIcon.value || editingPocket.value.icon }
         })
-        Swal.fire({ icon: 'success', title: 'Success', text: 'Pocket updated successfully!' })
+  Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'อัปเดตหมวดหมู่เรียบร้อยแล้ว' })
         closeEditModal()
       } catch (error) {
-        Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to update pocket' })
+  Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message || 'ไม่สามารถอัปเดตหมวดหมู่ได้' })
       }
     }
 
@@ -658,8 +658,8 @@ export default {
     const selectRecommended = () => {
       // Heuristic: preselect 2-3 common presets
       const recommended = (newPocketType.value === 'income')
-        ? ['income:เงินเดือน', 'income:ธุรกิจส่วนตัว', 'income:งานพิเศษ']
-        : ['expense:อาหาร/เครื่องดื่ม', 'expense:เดินทาง', 'expense:อื่นๆ']
+        ? ['income:เงินเดือน', 'income:โบนัส', 'income:รายได้เสริม']
+        : ['expense:อาหาร', 'expense:การเดินทาง', 'expense:อื่นๆ']
       const keys = new Set(presetSelected.value)
       for (const k of recommended) keys.add(k)
       presetSelected.value = keys
@@ -736,7 +736,7 @@ export default {
   await Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', html: `${addList}${removeList}` })
         closeModal()
       } catch (error) {
-        Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to create pockets' })
+  Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message || 'ไม่สามารถสร้างหมวดหมู่ได้' })
       }
     }
 
@@ -857,7 +857,7 @@ export default {
 
     // ตัวเลือกเดือน/ปี
     const months = Array.from({ length: 12 }, (_, i) =>
-      new Date(2000, i, 1).toLocaleString(undefined, { month: 'long' })
+      new Date(2000, i, 1).toLocaleString('th-TH', { month: 'long' })
     )
     const currentYear = new Date().getFullYear()
     const yearRange = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
@@ -898,10 +898,10 @@ export default {
         }
         const pocket = { name, icon: newPocket.value.icon || (newPocketType.value === 'income' ? 'fa-solid fa-sack-dollar' : 'fa-solid fa-cart-shopping'), type: newPocketType.value }
         await store.dispatch('createPocket', pocket)
-        Swal.fire({ icon: 'success', title: 'Success', text: 'Pocket created successfully!' })
+  Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'สร้างหมวดหมู่เรียบร้อยแล้ว' })
         closeModal()
       } catch (error) {
-        Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed to create pocket' })
+  Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message || 'ไม่สามารถสร้างหมวดหมู่ได้' })
       }
     }
 
