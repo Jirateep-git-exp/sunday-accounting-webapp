@@ -53,8 +53,40 @@ function formatBaht(amount, maximumFractionDigits = 2) {
 
 function buildHelpMessage() {
   return {
-    type: 'text',
-    text: 'พิมพ์จดบันทึกแบบนี้: "กาแฟ 45", "มาม่า100", หรือ "เงินเดือน25000"\nคำสั่ง: help, สรุปวันนี้, ยอดคงเหลือ',
+    type: 'flex',
+    altText: 'Help - Commands',
+    contents: {
+      type: 'bubble',
+      size: 'mega',
+      styles: { body: { backgroundColor: THEME.cardBg }, footer: { backgroundColor: THEME.cardBg } },
+      body: {
+        type: 'box', layout: 'vertical', paddingAll: '16px', spacing: 'md', contents: [
+          { type: 'text', text: 'คำสั่ง - ช่วยเหลือ', weight: 'bold', size: 'lg', color: THEME.text },
+          { type: 'separator' },
+          // Log transaction
+          { type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+            { type: 'text', text: '📝', size: 'lg' },
+            { type: 'text', text: 'การบันทึกรายการ', weight: 'bold', size: 'sm', color: THEME.text },
+          ]},
+          { type: 'text', text: 'พิมพ์จดบันทึกแบบนี้: "กาแฟ 45", "เงินเดือน 25000"', size: 'xs', color: THEME.subtext, margin: 'md' },
+          { type: 'separator' },
+          // View summary
+          { type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+            { type: 'text', text: '📊', size: 'lg' },
+            { type: 'text', text: 'การดูสรุป', weight: 'bold', size: 'sm', color: THEME.text },
+          ]},
+          { type: 'text', text: 'พิมพ์ "สรุป" หรือ "สรุป 7 วัน"', size: 'xs', color: THEME.subtext, margin: 'md' },
+          { type: 'separator' },
+          // View categories
+          { type: 'box', layout: 'horizontal', spacing: 'sm', contents: [
+            { type: 'text', text: '📁', size: 'lg' },
+            { type: 'text', text: 'การดูหมวดหมู่', weight: 'bold', size: 'sm', color: THEME.text },
+          ]},
+          { type: 'text', text: 'พิมพ์ "pocket" หรือ "หมวดหมู่"', size: 'xs', color: THEME.subtext, margin: 'md' },
+          { type: 'separator' },
+        ]
+      }
+    }
   }
 }
 
@@ -211,7 +243,7 @@ function buildSummaryFlex({ totalIncome, totalExpense, title, subtitle }, opts =
           },
         ]},
       footer: { type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-        { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการ', text: 'กาแฟ 45' } },
+        { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'วิธีเพิ่มรายการ', text: 'help' } },
         { type: 'button', style: 'primary', height: 'sm', color: THEME.brand, action: { type: 'uri', label: 'เปิดแอพ', uri: openUri } },
       ]},
     },
@@ -344,7 +376,6 @@ function buildPocketsFlex({ incomePockets = [], expensePockets = [] }, opts = {}
       },
       footer: {
         type: 'box', layout: 'horizontal', spacing: 'md', paddingAll: '16px', contents: [
-          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'เพิ่มรายการด่วน', uri: '/quick-add' } },
           { type: 'button', style: 'primary', color: THEME.brand, height: 'sm', action: { type: 'uri', label: 'ตั้งค่า Pocket', uri: openUri } },
         ]
       }

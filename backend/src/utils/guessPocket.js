@@ -111,7 +111,7 @@ function guessPocket(text) {
       const hit = contains.some(k => k && t.includes(normalize(k)))
       if (hit) {
         const cat = catalog.find(i => i.id === m.id)
-        if (cat) return { type: cat.type, name: cat.nameEn, id: cat.id }
+        if (cat) return { type: cat.type, name: cat.nameTh, id: cat.id }
       }
     }
   }
@@ -121,14 +121,14 @@ function guessPocket(text) {
   // direct match any synonym (respect type if forced)
   for (const item of items) {
     if (item.synonyms?.some(k => t.includes(normalize(k)))) {
-      return { type: item.type, name: item.nameEn, id: item.id }
+      return { type: item.type, name: item.nameTh, id: item.id }
     }
   }
 
   // fallback: names (Thai/English)
   for (const item of items) {
-    if (t.includes(normalize(item.nameTh)) || t.includes(normalize(item.nameEn))) {
-      return { type: item.type, name: item.nameEn, id: item.id }
+    if (t.includes(normalize(item.nameTh)) || t.includes(normalize(item.nameTh))) {
+      return { type: item.type, name: item.nameTh, id: item.id }
     }
   }
 
@@ -136,11 +136,11 @@ function guessPocket(text) {
   if (forcedType === 'income') {
     // Prefer a generic income bucket if no specific match
     const gift = catalog.find(i => i.id === 'gift-income') || catalog.find(i => i.type === 'income')
-    return { type: gift.type, name: gift.nameEn, id: gift.id }
+    return { type: gift.type, name: gift.nameTh, id: gift.id }
   }
   // default to expense others
   const other = catalog.find(i => i.id === 'others') || catalog.find(i => i.type === 'expense')
-  return { type: other.type, name: other.nameEn, id: other.id }
+  return { type: other.type, name: other.nameTh, id: other.id }
 }
 
 module.exports = guessPocket
