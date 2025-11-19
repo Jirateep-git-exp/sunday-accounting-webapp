@@ -193,7 +193,17 @@ export default {
       "Hi there",
       "Have a great day",
       "Glad to see you",
-      "Greetings"
+      "Greetings",
+      "Have a lucky day!",
+      "Have a lovely day, and keep shining!",
+      "Every day is a gift. Enjoy it!",
+      "Have a beautiful day!",
+      "Have a great day today!",
+      "Say hello to the sun!",
+      "ตื่นยัง! วันนี้สู้แบบชิล ๆ เดี๋ยวมันก็เป็นของเรา",
+      "เช้านี้สดใสมาก…ยกเว้นหน้าแกที่ยังไม่ตื่น",
+      "อรุณสวัสดิ์นะ…วันนี้ถ้าเหนื่อยก็พักได้ แต่งานไม่พักนะจ๊ะ",
+      "สวัสดีจ้า วันนี้ถ้าไม่พร้อมลุย ก็ทำเป็นพร้อมไปก่อนละกัน",
 
     ]
 
